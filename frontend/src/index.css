@@ -1,0 +1,218 @@
+@import "tailwindcss";
+
+/* ─── xAI-inspired design tokens (see DESIGN.md) ─────────────────────────────── */
+@theme {
+  --color-canvas: #0a0a0a;
+  --color-canvas-soft: #1a1c20;
+  --color-canvas-card: #191919;
+  --color-canvas-mid: #363a3f;
+  --color-hairline: #212327;
+
+  --color-ink: #ffffff;
+  --color-body: #dadbdf;
+  --color-mute: #7d8187;
+
+  --color-sunset: #ff7a17;
+  --color-dusk: #7c3aed;
+  --color-breeze: #a0c3ec;
+
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html, body, #root {
+  margin: 0;
+  min-height: 100vh;
+}
+
+body {
+  background: #0a0a0a;
+  color: #dadbdf;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Display headlines: Inter 400 with tight negative tracking (Universal Sans substitute) */
+.display {
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: #ffffff;
+}
+
+/* Uppercase tracked mono eyebrow — reads as a code comment */
+.eyebrow {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 12px;
+  line-height: 16px;
+  color: #7d8187;
+}
+
+/* ─── Pills (the entire interactive vocabulary) ──────────────────────────────── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 9999px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  padding: 10px 20px;
+  transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease,
+    transform 0.12s cubic-bezier(0.25, 0.1, 0.25, 1);
+  cursor: pointer;
+}
+.pill:disabled { opacity: 0.5; cursor: not-allowed; }
+/* Press feedback — every pill shrinks slightly on click, eases back on release. */
+.pill:active:not(:disabled) { transform: scale(0.97); }
+@media (prefers-reduced-motion: reduce) {
+  .pill:active:not(:disabled) { transform: none; }
+}
+
+/* white-filled pill — the rare primary CTA */
+.pill-primary {
+  background: #ffffff;
+  color: #0a0a0a;
+  border: 1px solid #ffffff;
+}
+.pill-primary:hover:not(:disabled) { background: #ececed; }
+
+/* white-translucent outline pill — every non-primary action */
+.pill-outline {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+.pill-outline:hover:not(:disabled) { background: rgba(255, 255, 255, 0.06); }
+
+/* ─── Card chrome — hairline border, no shadow ───────────────────────────────── */
+.card {
+  background: #191919;
+  border: 1px solid #212327;
+  border-radius: 8px;
+}
+
+/* ─── Inputs ─────────────────────────────────────────────────────────────────── */
+.input-xai {
+  width: 100%;
+  background: #1a1c20;
+  color: #ffffff;
+  border: 1px solid #212327;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 16px;
+  line-height: 24px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.input-xai::placeholder { color: #7d8187; }
+/* Focus glow — border brightens + soft ring fades in. */
+.input-xai:focus {
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+}
+
+/* ─── Nav link — underline slides in from the left on hover ───────────────────── */
+.nav-underline { position: relative; }
+.nav-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  height: 1px;
+  width: 100%;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.28s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.nav-underline:hover::after { transform: scaleX(1); }
+@media (prefers-reduced-motion: reduce) {
+  .nav-underline::after { transition: none; }
+}
+
+/* ─── Shimmer skeleton — left-to-right shine while content loads ──────────────── */
+@keyframes shimmer { 100% { transform: translateX(100%); } }
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #1a1c20;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after { animation: none; }
+}
+
+/* ─── Hero pointer-follow glow ───────────────────────────────────────────────── */
+/* Register the cursor coords so the glow position can interpolate (smooth trail)
+   instead of snapping frame-to-frame. */
+@property --mx {
+  syntax: "<length-percentage>";
+  inherits: false;
+  initial-value: 30%;
+}
+@property --my {
+  syntax: "<length-percentage>";
+  inherits: false;
+  initial-value: 30%;
+}
+.hero-glow::before {
+  content: "";
+  position: absolute;
+  inset: -120px;            /* bleed past edges so falloff never hits a hard border */
+  pointer-events: none;
+  background: radial-gradient(
+    560px circle at var(--mx, 30%) var(--my, 30%),
+    rgba(255, 122, 23, 0.13),
+    rgba(255, 122, 23, 0.06) 35%,
+    rgba(255, 122, 23, 0.015) 60%,
+    transparent 80%
+  );
+  opacity: 0;
+  /* position eases toward the cursor; opacity fades gently on enter/leave */
+  transition: --mx 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              --my 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.6s ease;
+  will-change: --mx, --my, opacity;
+}
+.hero-glow:hover::before { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-glow::before { transition: opacity 0.6s ease; }
+}
+
+/* ─── Apple-style liquid glass header ────────────────────────────────────────── */
+.glass-header {
+  background: rgba(12, 12, 13, 0.55);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* ─── Motion ─────────────────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.35s ease both; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.8s linear infinite; }
