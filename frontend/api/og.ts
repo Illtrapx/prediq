@@ -4,8 +4,10 @@ import { createElement as h } from 'react'
 // Dynamic Open Graph card for a market. Link unfurls (X, Discord, Telegram)
 // show a branded, per-market preview.
 //   /api/og?q=<question>&deadline=<unix seconds>
-// Node runtime (default): global fetch works in prod AND under `vercel dev`,
-// whose edge emulator does not implement outbound fetch (needed for the font).
+// Edge runtime: @vercel/og's streaming ImageResponse is built for edge (it
+// hangs on the Node runtime). Real edge has working fetch for the font; only
+// the local `vercel dev` edge emulator lacks fetch — so verify on a deploy.
+export const config = { runtime: 'edge' }
 
 // Inter (one weight) fetched at runtime — satori needs real font data.
 const FONT_URL =
