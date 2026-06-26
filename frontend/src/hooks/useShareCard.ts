@@ -16,6 +16,7 @@ type Options = {
   marketQuestion: string
   side: boolean
   txHash?: string | null
+  marketId?: number
 }
 
 type UseShareCardReturn = {
@@ -93,16 +94,19 @@ export function useShareCard(
       ? `\nVerify on-chain: https://sepolia.etherscan.io/tx/${opts.txHash}`
       : ''
 
+    // Per-market share link unfurls a dynamic OG card (api/m/:id → api/og).
+    const link = opts.marketId != null ? `${VERCEL_URL}/m/${opts.marketId}` : VERCEL_URL
+
     const text =
       `I just predicted ${side} on "${opts.marketQuestion}" 🔐\n` +
       `My bet amount is encrypted using Zama FHE — nobody can see my position size.` +
       txPart +
-      `\nTrade on PredIQ: ${VERCEL_URL}` +
+      `\nTrade on PredIQ: ${link}` +
       `\n#ZamaFHE #PredIQ #OnChainPredictions`
 
     const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`
     window.open(intentUrl, '_blank', 'noopener,noreferrer')
-  }, [downloadCard, opts.side, opts.marketQuestion, opts.txHash])
+  }, [downloadCard, opts.side, opts.marketQuestion, opts.txHash, opts.marketId])
 
   return { capturing, downloadCard, shareToX }
 }

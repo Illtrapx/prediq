@@ -124,10 +124,11 @@ export function CstBalance({ address, signer }: Props) {
       }
       // Confirm shape; txHash not otherwise used.
       await res.json().catch(() => ({}))
-      // Wait for chain state to settle before re-reading the balance.
-      // Single refresh — reuses the cached signature, no extra wallet prompt.
-      await new Promise(r => setTimeout(r, 3000))
-      await refresh()
+      // Optimistic update — the faucet always sends exactly 1000 CST. Bump the
+      // displayed balance directly instead of re-reading + decrypting, which
+      // would force an EIP-712 signature prompt. The exact on-chain balance
+      // reconciles next time the user decrypts (mount / after a bet).
+      setBalance(prev => String(Number(prev ?? '0') + 1000))
       toast('1000 test CST sent to your wallet ✓', 'success')
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e))

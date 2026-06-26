@@ -17,6 +17,7 @@
   ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/m/(.*)", "destination": "/api/share?id=$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

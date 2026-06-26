@@ -3,7 +3,7 @@ import { BrowserProvider, JsonRpcSigner, type Eip1193Provider } from 'ethers'
 import { useAccount, useConnectorClient, useDisconnect } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { sepolia } from 'wagmi/chains'
-import { setFhevmProvider } from '../lib/fhevm'
+import { setFhevmProvider, getFhevmInstance } from '../lib/fhevm'
 
 export type WalletState = {
   ready: boolean
@@ -41,6 +41,11 @@ export function useWallet(): WalletState {
     // transport to the FHEVM SDK layer, and wrap it for ethers for contract calls.
     const eip1193 = client.transport as unknown as Eip1193Provider
     setFhevmProvider(eip1193)
+
+    // Pre-warm the FHEVM instance now (WASM import + initSDK compile + KMS key
+    // fetch) so the first "Encrypt & bet" pays only for proof generation, not a
+    // cold ~1 MB load. No signature needed — createInstance just fetches keys.
+    void getFhevmInstance().catch(() => { /* warms on demand if this fails */ })
 
     const ethersProvider = new BrowserProvider(eip1193, {
       chainId: sepolia.id,

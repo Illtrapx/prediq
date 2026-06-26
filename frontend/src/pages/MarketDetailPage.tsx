@@ -31,14 +31,17 @@ type Props = { signer: JsonRpcSigner | null; address: string | null }
 const VERCEL_URL = 'https://prediq-umber.vercel.app'
 
 // Build an X (Twitter) share intent. The whole tweet text is URL-encoded as a single
-// param so the question can contain any characters safely.
-function shareUrl(question: string): string {
-  const text = `I just bet on "${question}" on PredIQ — confidential predictions powered by Zama FHE 🔐 ${VERCEL_URL} #ZamaFHE #PredIQ`
+// param so the question can contain any characters safely. The /m/:id link unfurls
+// a dynamic per-market OG card (api/m/:id → api/og).
+function shareUrl(question: string, id: number): string {
+  const link = `${VERCEL_URL}/m/${id}`
+  const text = `I just bet on "${question}" on PredIQ — confidential predictions powered by Zama FHE 🔐 ${link} #ZamaFHE #PredIQ`
   return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`
 }
 
 // ── Share Card Success UI ─────────────────────────────────────────────────────
 function BetShareSuccess({
+  marketId,
   marketQuestion,
   side,
   placedAt,
@@ -46,6 +49,7 @@ function BetShareSuccess({
   walletAddress,
   txHash,
 }: {
+  marketId: number
   marketQuestion: string
   side: boolean
   placedAt: number
@@ -58,6 +62,7 @@ function BetShareSuccess({
     marketQuestion,
     side,
     txHash,
+    marketId,
   })
 
   return (
@@ -385,6 +390,7 @@ function BetSection({
           >
             <div className="eyebrow text-[11px] mb-4 text-center">Share your prediction</div>
             <BetShareSuccess
+              marketId={id}
               marketQuestion={marketQuestion}
               side={betMeta.side}
               placedAt={betMeta.placedAt}
@@ -712,7 +718,7 @@ export function MarketDetailPage({ signer, address }: Props) {
         <div className="flex items-start justify-between gap-4">
           <h1 className="display text-2xl leading-snug">{market.question}</h1>
           <a
-            href={shareUrl(market.question)}
+            href={shareUrl(market.question, marketId)}
             target="_blank"
             rel="noreferrer"
             className="pill pill-outline px-4 py-2 text-[12px] shrink-0 whitespace-nowrap"
@@ -732,7 +738,7 @@ export function MarketDetailPage({ signer, address }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 items-start">
       <div className="flex flex-col gap-4">
         {/* Odds hidden — premium explainer, not a missing feature */}
-        <OddsHiddenPanel market={market} />
+        <OddsHiddenPanel market={market} marketId={marketId} />
 
         {/* Bet — open markets before deadline */}
         {!market.resolved && !pastDeadline && (
