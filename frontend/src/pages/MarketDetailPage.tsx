@@ -219,12 +219,13 @@ function BetSection({
   async function approveOperator() {
     if (!signer) { setApprStatus('error'); setApprMsg('Connect your wallet to approve CST.'); return }
     try {
-      setApprStatus('pending'); setApprMsg('Approving PredIQ as CST operator…')
+      setApprStatus('pending'); setApprMsg('Confirm in your wallet…')
       const tx = await getCSTContract(signer).setOperator(PM_ADDRESS, 2000000000n)
-      await tx.wait()
+      // Optimistic — show approved immediately; confirmation happens in background.
       setApprStatus('success'); setApprMsg('CST operator approved.')
       toast('PredIQ approved as CST operator ✓', 'success')
       setOpState('approved')
+      tx.wait().catch(() => {})
     } catch (e: unknown) {
       setApprMsg(e instanceof Error ? e.message : String(e))
       setApprStatus('error')
@@ -242,17 +243,20 @@ function BetSection({
         .add64(BigInt(amount))
         .addBool(side)
         .encrypt()
-      setMsg('Sending transaction…')
+      setMsg('Confirm in your wallet…')
       const contract = getPMContract(signer)
       const tx = await contract.bet(id, enc.handles[0], enc.handles[1], enc.inputProof)
-      await tx.wait()
+      // Show success as soon as the tx is submitted — don't block on block confirmation
+      // (~12s on Sepolia). cst:refresh and onDone fire in the background once mined.
       const placedAt = Date.now()
       addMyBet(address, { marketId: id, side, amount, ts: placedAt, txHash: tx.hash })
-      window.dispatchEvent(new Event('cst:refresh'))
       setBetMeta({ side, placedAt, txHash: tx.hash })
       setStatus('success'); setMsg('Bet placed. Amount and side are encrypted on-chain.')
       toast('Bet placed — amount & side encrypted on-chain 🔐', 'success')
-      setTimeout(onDone, 8000)
+      tx.wait().then(() => {
+        window.dispatchEvent(new Event('cst:refresh'))
+        setTimeout(onDone, 8000)
+      }).catch(() => {})
     } catch (e: unknown) {
       setMsg(e instanceof Error ? e.message : String(e))
       setStatus('error')
