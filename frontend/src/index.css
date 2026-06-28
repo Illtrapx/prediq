@@ -17,7 +17,8 @@
   --color-breeze: #a0c3ec;
 
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 :root {
@@ -37,10 +38,11 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Display headlines: Inter 400 with tight negative tracking (Universal Sans substitute) */
+/* Display headlines: Space Grotesk — geometric, premium, tight negative tracking */
 .display {
-  font-weight: 400;
-  letter-spacing: -0.04em;
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.03em;
   line-height: 1;
   color: #ffffff;
 }
@@ -196,15 +198,195 @@ body {
   .hero-glow::before { transition: opacity 0.6s ease; }
 }
 
-/* ─── Apple-style liquid glass header ────────────────────────────────────────── */
-.glass-header {
-  background: rgba(12, 12, 13, 0.55);
-  backdrop-filter: blur(22px) saturate(180%);
-  -webkit-backdrop-filter: blur(22px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+/* ─── Navbar — full-width header that morphs into a floating glass capsule ─────
+   Every property interpolates off --nav-p (0→1, set by useNavScroll over the
+   first ~56px of scroll). The bar tracks scroll continuously; the short shared
+   transition only adds a touch of follow-through so wheel-steps read as fluid
+   rather than stepped. No state flip, no snapping. ------------------------- */
+.nav-shell {
+  --p: var(--nav-p, 0);
+  position: fixed;
+  top: calc(14px * var(--p));
+  /* Per-side inset: 8% on normal screens, but capped so the floating bar never
+     exceeds ~1200px wide on large displays (centred). max() picks the cap term
+     once (100% − 1200px)/2 grows past 8% — i.e. above ~1440px. ×var(--p) keeps
+     it interpolating from full-width (p=0) to the floating container (p=1). */
+  left: calc(max(8%, (100% - 1200px) / 2) * var(--p));
+  right: calc(max(8%, (100% - 1200px) / 2) * var(--p));
+  z-index: 50;
+  height: calc(80px - 20px * var(--p));
+  border-radius: calc(22px * var(--p));
+  /* glass: stays light — opacity & blur ramp gently with scroll */
+  background: rgba(10, 10, 10, calc(0.42 + 0.34 * var(--p)));
+  border: 1px solid rgba(255, 255, 255, calc(0.05 + 0.025 * var(--p)));
+  backdrop-filter: blur(calc(10px + 14px * var(--p))) saturate(calc(150% + 30% * var(--p)));
+  -webkit-backdrop-filter: blur(calc(10px + 14px * var(--p))) saturate(calc(150% + 30% * var(--p)));
+  /* soft, wide, light shadow — large blur radius, low alpha, never heavy */
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 8px 32px rgba(0, 0, 0, 0.35);
+    0 calc(16px * var(--p)) calc(56px * var(--p)) calc(-12px * var(--p)) rgba(0, 0, 0, calc(0.28 * var(--p))),
+    inset 0 1px 0 rgba(255, 255, 255, calc(0.05 * var(--p)));
+  /* gentle follow-through on top of the scroll-linked var */
+  transition:
+    top      0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    left     0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    right    0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    height   0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius    0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.3s ease,
+    border-color     0.3s ease,
+    box-shadow       0.3s ease;
+  will-change: top, left, right, height, border-radius;
+}
+@media (max-width: 640px) {
+  .nav-shell {
+    left: calc(12px * var(--p));
+    right: calc(12px * var(--p));
+    border-radius: calc(16px * var(--p));
+  }
+}
+
+/* Spacer holds the layout open while the nav is position:fixed */
+.nav-spacer { height: 80px; flex-shrink: 0; }
+
+.nav-inner {
+  height: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+@media (max-width: 640px) {
+  .nav-inner { padding: 0 16px; }
+}
+
+/* nav links cluster — spacing tightens a hair as the bar floats in */
+.nav-cluster {
+  display: flex;
+  align-items: center;
+  gap: calc(4px - 2px * var(--nav-p, 0));
+}
+
+.nav-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: #9aa0a6;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+.nav-item:hover { color: #ffffff; background: rgba(255, 255, 255, 0.05); }
+.nav-item-active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 122, 0, 0.30);
+}
+
+/* ─── Brand mark ─────────────────────────────────────────────────────────────── */
+/* The lockup scales down a touch as the navbar floats in (1 → 0.93). Outside the
+   navbar --nav-p is unset, so this resolves to scale(1). */
+.logo {
+  transform: scale(calc(1 - 0.07 * var(--nav-p, 0)));
+  transform-origin: left center;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.logo-word {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.5rem;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  color: #ffffff;
+  /* descenders ('q') pull the text box low; nudge down a hair so the symmetric
+     mark and the wordmark's cap-height share one optical centre line */
+  transform: translateY(0.5px);
+}
+.logo-mark { display: block; }
+/* hover: the confidence interval "tightens" — brackets ease inward */
+.logo-bracket { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+.logo:hover .logo-bracket-l { transform: translateX(1.4px); }
+.logo:hover .logo-bracket-r { transform: translateX(-1.4px); }
+
+@media (prefers-reduced-motion: reduce) {
+  /* scroll-linked morph still tracks (user-driven), but drop the follow-through
+     and the decorative bracket hover */
+  .nav-shell { transition: none; }
+  .logo, .logo-bracket { transition: none; }
+  .logo:hover .logo-bracket-l, .logo:hover .logo-bracket-r { transform: none; }
+}
+
+/* ─── "How it works" — interactive step cards (homepage only) ─────────────────── */
+.how-card {
+  position: relative;
+  overflow: hidden;
+  padding: 24px;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.3s ease, border-color 0.3s ease;
+}
+.how-card:hover {
+  transform: translateY(-3px);
+  background: #1c1c1c;
+  border-color: rgba(255, 122, 23, 0.35);
+}
+/* sunset accent rail sweeps in along the bottom edge */
+.how-card::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, #ff7a17, rgba(255, 122, 23, 0));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.how-card:hover::after { transform: scaleX(1); }
+
+.how-icon {
+  display: inline-flex;
+  color: #7d8187;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+.how-card:hover .how-icon { color: #ff7a17; transform: translateY(-1px); }
+
+.how-num { transition: color 0.3s ease; }
+.how-card:hover .how-num { color: #ff7a17; }
+
+/* padlock shackle springs shut when its card is hovered */
+.lock-shackle {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.how-card:hover .lock-shackle { transform: translateY(-2px); }
+
+/* real technical detail slides + fades in on hover */
+.how-detail {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.35s ease, margin-top 0.4s ease;
+}
+.how-card:hover .how-detail {
+  max-height: 32px;
+  opacity: 1;
+  margin-top: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .how-card,
+  .how-card:hover,
+  .how-icon,
+  .lock-shackle { transform: none; transition: color 0.3s ease; }
 }
 
 /* ─── Motion ─────────────────────────────────────────────────────────────────── */

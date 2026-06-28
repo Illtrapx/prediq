@@ -6,6 +6,7 @@ import type { MarketStruct } from '../lib/contract'
 import { MarketCard, MarketCardSkeleton } from '../components/MarketCard'
 import { EncryptionVisualizer } from '../components/EncryptionVisualizer'
 import { HeroEncryptDemo } from '../components/HeroEncryptDemo'
+import { HowItWorks } from '../components/HowItWorks'
 import { PageMotion } from '../components/PageMotion'
 import { staggerContainer } from '../lib/animations'
 import { getMarketCategories, CATEGORIES, type Category } from '../lib/supabase'
@@ -92,23 +93,8 @@ export function MarketListPage() {
 
       <div className="border-t border-hairline" />
 
-      {/* How it works */}
-      <section className="py-14">
-        <div className="eyebrow mb-8">How it works</div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-hairline border border-hairline rounded-lg overflow-hidden">
-          {[
-            { n: '01', t: 'Bet privately', d: 'Amount and side are encrypted client-side with FHE before they ever touch the chain.' },
-            { n: '02', t: 'Pools stay sealed', d: 'YES / NO totals accumulate as ciphertext. Both update every bet, hiding your choice.' },
-            { n: '03', t: 'Reveal at resolution', d: 'Only aggregate pools decrypt via the KMS. Winners claim a private payout.' },
-          ].map(s => (
-            <div key={s.n} className="bg-canvas-card p-6">
-              <div className="eyebrow text-mute">{s.n}</div>
-              <div className="text-ink text-base mt-3">{s.t}</div>
-              <div className="text-mute text-sm mt-2 leading-relaxed">{s.d}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* How it works — interactive on hover (homepage only) */}
+      <HowItWorks />
 
       <div className="border-t border-hairline" />
 

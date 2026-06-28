@@ -1,9 +1,12 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useRef } from 'react'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 import { useWallet } from './hooks/useWallet'
+import { useNavScroll } from './hooks/useNavScroll'
 import { WalletButton } from './components/WalletButton'
 import { CstBalance } from './components/CstBalance'
 import { ToastProvider } from './components/Toast'
+import { Logo } from './components/Logo'
+import { NavItem } from './components/NavItem'
 import { MarketListPage } from './pages/MarketListPage'
 
 // Landing (MarketListPage) ships in the main bundle; secondary routes are
@@ -16,33 +19,35 @@ const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage').then(m => ({ 
 
 function App() {
   const wallet = useWallet()
+  const navRef = useRef<HTMLElement>(null)
+  useNavScroll(navRef)
 
   return (
     <BrowserRouter>
       <ToastProvider>
       <div className="min-h-screen bg-canvas text-body">
-        <nav className="glass-header sticky top-0 z-20 px-6 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center group">
-            <span className="display text-ink text-2xl tracking-tight group-hover:opacity-80 transition-opacity">Prediq</span>
-          </Link>
-          <div className="flex items-center gap-5">
-            <Link to="/how-it-works" className="nav-underline eyebrow text-mute hover:text-ink transition-colors hidden sm:block">
-              How it works
+        <nav ref={navRef} className="nav-shell">
+          <div className="nav-inner">
+            <Link to="/" aria-label="Prediq — home" className="shrink-0">
+              <Logo />
             </Link>
-            <Link to="/leaderboard" className="nav-underline eyebrow text-mute hover:text-ink transition-colors hidden sm:block">
-              Leaderboard
-            </Link>
-            {wallet.authenticated && (
-              <Link to="/my-bets" className="nav-underline eyebrow text-mute hover:text-ink transition-colors hidden sm:block">
-                My bets
-              </Link>
-            )}
-            {wallet.authenticated && (
-              <CstBalance address={wallet.address} signer={wallet.signer} />
-            )}
-            <WalletButton wallet={wallet} />
+
+            <div className="nav-cluster hidden sm:flex">
+              <NavItem to="/how-it-works">How it works</NavItem>
+              <NavItem to="/leaderboard">Leaderboard</NavItem>
+              {wallet.authenticated && <NavItem to="/my-bets">My bets</NavItem>}
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0">
+              {wallet.authenticated && (
+                <CstBalance address={wallet.address} signer={wallet.signer} />
+              )}
+              <WalletButton wallet={wallet} />
+            </div>
           </div>
         </nav>
+        {/* Fixed navbar lifts out of flow — spacer preserves the 80px slot */}
+        <div aria-hidden="true" className="nav-spacer" />
 
         <Suspense fallback={<div className="max-w-5xl mx-auto px-6 pt-20 eyebrow text-mute">Loading…</div>}>
           <Routes>
@@ -60,7 +65,7 @@ function App() {
         <footer className="mt-24 border-t border-hairline">
           <div className="max-w-5xl mx-auto px-6 py-14 grid gap-10 md:grid-cols-[2fr_1fr_1fr]">
             <div className="max-w-xs">
-              <span className="display text-ink text-2xl tracking-tight">Prediq</span>
+              <Logo />
               <p className="text-mute text-sm mt-3 leading-relaxed">
                 The institutional bridge for high-fidelity encrypted prediction markets.
                 Empowering data-driven decision making with FHE confidentiality.
