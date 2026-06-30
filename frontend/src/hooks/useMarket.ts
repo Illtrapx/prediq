@@ -15,8 +15,12 @@ export function useMarket(id: number) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     const contract = getPMReadContract()
-    contract.getMarket(id)
-      .then((m: MarketStruct) => { setMarket(m); setError(null) })
+    contract
+      .getMarket(id)
+      .then((m: MarketStruct) => {
+        setMarket(m)
+        setError(null)
+      })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false))
   }, [id, tick])

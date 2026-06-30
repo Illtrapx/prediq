@@ -20,8 +20,14 @@ export function TxStatus({ status, message }: Props) {
     error: 'Transaction failed',
   }
   return (
-    <div className={`mt-3 text-sm px-3 py-2 border rounded-lg break-words ${styles[status]}`}>
-      {prefix[status]}{message ?? fallback[status]}
+    <div
+      role={status === 'error' ? 'alert' : 'status'}
+      aria-live={status === 'error' ? 'assertive' : 'polite'}
+      aria-atomic="true"
+      className={`mt-3 text-sm px-3 py-2 border rounded-lg break-words ${styles[status]}`}
+    >
+      {prefix[status]}
+      {message ?? fallback[status]}
     </div>
   )
 }

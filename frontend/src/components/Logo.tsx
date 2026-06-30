@@ -38,13 +38,7 @@ export function LogoMark({ size = 30, className = '', title }: LogoMarkProps) {
   )
 }
 
-export function Logo({
-  className = '',
-  markSize = 30,
-}: {
-  className?: string
-  markSize?: number
-}) {
+export function Logo({ className = '', markSize = 30 }: { className?: string; markSize?: number }) {
   return (
     <span className={`logo inline-flex items-center gap-[11px] ${className}`}>
       <LogoMark size={markSize} className="logo-mark text-ink" />

@@ -1,12 +1,12 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+// SPDX-License-Identifier: BSD-3-Clause-Clear
+pragma solidity ^0.8.27;
 
 import {FHE, euint64, euint128, externalEuint64, ebool, externalEbool} from "@fhevm/solidity/lib/FHE.sol";
 import {ZamaEthereumConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
 import {IERC7984} from "@openzeppelin/confidential-contracts/interfaces/IERC7984.sol";
 
 /// @title Confidential Prediction Market
-/// @author fhevm-hardhat-template
+/// @author Illtrapx
 /// @notice Binary (YES/NO) markets where each user's stake amount and chosen side stay
 /// encrypted on-chain until the market resolves. Only the aggregate pools are revealed
 /// (at resolution) so payouts can be computed with a plaintext divisor; individual bets

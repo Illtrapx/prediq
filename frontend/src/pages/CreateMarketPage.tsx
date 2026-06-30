@@ -35,22 +35,47 @@ function AccessRequest({ address }: { address: string }) {
   return (
     <form onSubmit={submit} className="flex flex-col gap-6 card p-6 fade-up">
       <div>
-        <label className="eyebrow block mb-2">Name</label>
-        <input required value={name} onChange={e => setName(e.target.value)} placeholder="Jane Doe" className="input-xai" />
+        <label htmlFor="access-name" className="eyebrow block mb-2">Name</label>
+        <input
+          id="access-name"
+          required
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder="Jane Doe"
+          className="input-xai"
+        />
       </div>
       <div>
-        <label className="eyebrow block mb-2">Email</label>
-        <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="jane@example.com" className="input-xai" />
+        <label htmlFor="access-email" className="eyebrow block mb-2">Email</label>
+        <input
+          id="access-email"
+          required
+          type="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          placeholder="jane@example.com"
+          className="input-xai"
+        />
       </div>
       <div>
-        <label className="eyebrow block mb-2">Why do you want to create markets?</label>
-        <textarea required value={reason} onChange={e => setReason(e.target.value)} rows={3}
+        <label htmlFor="access-reason" className="eyebrow block mb-2">Why do you want to create markets?</label>
+        <textarea
+          id="access-reason"
+          required
+          value={reason}
+          onChange={e => setReason(e.target.value)}
+          rows={3}
           placeholder="Tell us what kind of markets you'd run."
-          className="input-xai resize-none" />
+          className="input-xai resize-none"
+        />
       </div>
-      <div className="eyebrow text-mute">Wallet · {address.slice(0, 6)}…{address.slice(-4)}</div>
+      <div className="eyebrow text-mute">
+        Wallet · {address.slice(0, 6)}…{address.slice(-4)}
+      </div>
       <button type="submit" disabled={status === 'pending'} className="pill pill-primary w-full">
-        {status === 'pending' && <span className="spin inline-block w-4 h-4 border-2 border-black/40 border-t-transparent rounded-full" />}
+        {status === 'pending' && (
+          <span className="spin inline-block w-4 h-4 border-2 border-black/40 border-t-transparent rounded-full" />
+        )}
         {status === 'pending' ? 'Submitting…' : 'Request access'}
       </button>
       <TxStatus status={status === 'error' ? 'error' : 'idle'} message={errMsg} />
@@ -70,12 +95,13 @@ function PolymarketSuggestions({ onSelect }: { onSelect: (s: PolymarketSuggestio
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) return (
-    <div className="flex items-center gap-2 text-mute text-xs mb-4">
-      <span className="spin inline-block w-3 h-3 border border-white/40 border-t-transparent rounded-full" />
-      Loading trending markets…
-    </div>
-  )
+  if (loading)
+    return (
+      <div className="flex items-center gap-2 text-mute text-xs mb-4">
+        <span className="spin inline-block w-3 h-3 border border-white/40 border-t-transparent rounded-full" />
+        Loading trending markets…
+      </div>
+    )
 
   if (!suggestions.length) return null
 
@@ -111,7 +137,11 @@ function CreateForm({ signer }: { signer: JsonRpcSigner | null }) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!signer) { setErrMsg('Connect your wallet first.'); setStatus('error'); return }
+    if (!signer) {
+      setErrMsg('Connect your wallet first.')
+      setStatus('error')
+      return
+    }
     const deadlineTs = Math.floor(new Date(deadline).getTime() / 1000)
     if (deadlineTs <= Math.floor(Date.now() / 1000) + 60) {
       setErrMsg('Deadline must be at least 1 minute in the future')
@@ -145,43 +175,72 @@ function CreateForm({ signer }: { signer: JsonRpcSigner | null }) {
     <form onSubmit={submit} className="flex flex-col gap-6 card p-6 fade-up">
       <PolymarketSuggestions onSelect={applySuggestion} />
       <div>
-        <label className="eyebrow block mb-2">Question</label>
-        <input required value={question} onChange={e => setQuestion(e.target.value)}
-          placeholder="Will ETH hit $4000 by July 7?" className="input-xai" />
+        <label htmlFor="create-question" className="eyebrow block mb-2">Question</label>
+        <input
+          id="create-question"
+          required
+          value={question}
+          onChange={e => setQuestion(e.target.value)}
+          placeholder="Will ETH hit $4000 by July 7?"
+          className="input-xai"
+        />
         <p className="text-mute text-[12px] mt-2">Phrase it so the answer is a clear YES or NO.</p>
       </div>
       <div>
-        <label className="eyebrow block mb-2">Category</label>
+        <label htmlFor="create-category" className="eyebrow block mb-2">Category</label>
         <select
+          id="create-category"
           value={category}
           onChange={e => setCategory(e.target.value as Category)}
           className="input-xai [color-scheme:dark]"
         >
-          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          {CATEGORIES.map(c => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
         </select>
       </div>
       <div>
-        <label className="eyebrow block mb-2">Resolution source (optional)</label>
+        <label htmlFor="create-resolution-source" className="eyebrow block mb-2">Resolution source (optional)</label>
         <input
+          id="create-resolution-source"
           type="url"
           value={resolutionSource}
           onChange={e => setResolutionSource(e.target.value)}
           placeholder="https://x.com/... or https://coinmarketcap.com/..."
           className="input-xai"
         />
-        <p className="text-mute text-[12px] mt-2">Shown to bettors after resolution — helps them verify the outcome.</p>
+        <p className="text-mute text-[12px] mt-2">
+          Shown to bettors after resolution — helps them verify the outcome.
+        </p>
       </div>
       <div>
-        <label className="eyebrow block mb-2">Resolve deadline</label>
-        <input required type="datetime-local" value={deadline} onChange={e => setDeadline(e.target.value)}
-          className="input-xai [color-scheme:dark]" />
-        <p className="text-mute text-[12px] mt-2">Betting closes at this time. You can resolve afterward.</p>
+        <label htmlFor="create-deadline" className="eyebrow block mb-2">Resolve deadline</label>
+        <input
+          id="create-deadline"
+          required
+          type="datetime-local"
+          value={deadline}
+          onChange={e => setDeadline(e.target.value)}
+          className="input-xai [color-scheme:dark]"
+        />
+        <p className="text-mute text-[12px] mt-2">
+          Betting closes at this time. You can resolve afterward.
+        </p>
       </div>
       <button type="submit" disabled={status === 'pending'} className="pill pill-primary w-full">
-        {status === 'pending' && <span className="spin inline-block w-4 h-4 border-2 border-black/40 border-t-transparent rounded-full" />}
+        {status === 'pending' && (
+          <span className="spin inline-block w-4 h-4 border-2 border-black/40 border-t-transparent rounded-full" />
+        )}
         {status === 'pending' ? 'Creating…' : 'Create market'}
       </button>
-      <TxStatus status={status} message={status === 'error' ? errMsg : status === 'success' ? 'Created! Redirecting…' : undefined} />
+      <TxStatus
+        status={status}
+        message={
+          status === 'error' ? errMsg : status === 'success' ? 'Created! Redirecting…' : undefined
+        }
+      />
     </form>
   )
 }
@@ -201,32 +260,53 @@ export function CreateMarketPage({ signer, address }: Props) {
 
   let heading = 'Request creator access'
   let sub = 'Market creation is gated. Fill out the form and an admin will review your request.'
-  if (status === 'approved') { heading = 'Create a market'; sub = 'You are an approved creator. You become the resolver — you declare the outcome after the deadline.' }
-  if (status === 'pending') { heading = 'Application under review'; sub = 'Your creator request was submitted.' }
-  if (status === 'rejected') { heading = 'Application declined'; sub = 'Your creator request was not approved.' }
+  if (status === 'approved') {
+    heading = 'Create a market'
+    sub =
+      'You are an approved creator. You become the resolver — you declare the outcome after the deadline.'
+  }
+  if (status === 'pending') {
+    heading = 'Application under review'
+    sub = 'Your creator request was submitted.'
+  }
+  if (status === 'rejected') {
+    heading = 'Application declined'
+    sub = 'Your creator request was not approved.'
+  }
 
   return (
     <PageMotion className="max-w-lg mx-auto px-6 pt-12 pb-20">
-      <Link to="/" className="eyebrow hover:text-ink transition-colors mb-8 inline-block">← Markets</Link>
+      <Link to="/" className="eyebrow hover:text-ink transition-colors mb-8 inline-block">
+        ← Markets
+      </Link>
       <div className="eyebrow mb-3">{status === 'approved' ? 'New market' : 'Creator access'}</div>
       <h1 className="display text-4xl mb-3">{heading}</h1>
       <p className="text-body mb-9">{sub}</p>
 
       {status === 'loading' && (
-        <div className="flex items-center gap-2 text-mute text-sm py-8">
-          <span className="spin inline-block w-4 h-4 border-2 border-white/40 border-t-transparent rounded-full" />
+        <div className="flex items-center justify-center gap-2 text-mute text-sm py-12">
+          <span aria-hidden="true" className="spin inline-block w-4 h-4 border-2 border-white/40 border-t-transparent rounded-full" />
           Checking access…
         </div>
       )}
       {status === 'disconnected' && (
-        <Notice title="Connect your wallet" body="Sign in with your wallet to request creator access or create a market." />
+        <Notice
+          title="Connect your wallet"
+          body="Sign in with your wallet to request creator access or create a market."
+        />
       )}
       {status === 'none' && address && <AccessRequest address={address} />}
       {status === 'pending' && (
-        <Notice title="Pending review" body="We'll grant access once an admin approves your request. Check back soon." />
+        <Notice
+          title="Pending review"
+          body="We'll grant access once an admin approves your request. Check back soon."
+        />
       )}
       {status === 'rejected' && (
-        <Notice title="Not approved" body="Your request to create markets was declined. Reach out if you think this is a mistake." />
+        <Notice
+          title="Not approved"
+          body="Your request to create markets was declined. Reach out if you think this is a mistake."
+        />
       )}
       {status === 'approved' && <CreateForm signer={signer} />}
     </PageMotion>

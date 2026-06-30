@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import type { MarketStruct } from '../lib/contract'
+import { getMarketStatus } from '../lib/market'
 import { Ciphertext } from './Ciphertext'
 import { PoolStat } from './PoolStat'
 import { MarketCountdown } from './MarketCountdown'
@@ -10,7 +11,6 @@ const MotionLink = motion.create(Link)
 
 type Props = { id: number; market: MarketStruct }
 
-// Shimmer placeholder shown in the grid while markets are still loading.
 export function MarketCardSkeleton() {
   return (
     <div className="card p-5 flex flex-col gap-4">
@@ -29,19 +29,10 @@ export function MarketCardSkeleton() {
   )
 }
 
-function statusOf(market: MarketStruct): { label: string; dot: string } {
-  if (market.finalized) return { label: 'FINALIZED', dot: '#a0c3ec' }
-  if (market.resolved) return { label: 'RESOLVED', dot: '#ff7a17' }
-  const now = Math.floor(Date.now() / 1000)
-  if (Number(market.resolveDeadline) < now) return { label: 'CLOSED', dot: '#7d8187' }
-  return { label: 'OPEN', dot: '#ffffff' }
-}
-
 export function MarketCard({ id, market }: Props) {
-  const status = statusOf(market)
+  const status = getMarketStatus(market)
   const open = status.label === 'OPEN'
 
-  // Finalized split (for the result bar)
   let yesPct = 50
   if (market.finalized && market.totalPool > 0n) {
     const win = market.winningPool
@@ -58,7 +49,6 @@ export function MarketCard({ id, market }: Props) {
       transition={softSpring}
       className="group flex flex-col card p-5 hover:border-white/25 transition-colors"
     >
-      {/* Header: status eyebrow */}
       <div className="flex items-center justify-between mb-3">
         <span className="eyebrow flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full" style={{ background: status.dot }} />
@@ -67,12 +57,8 @@ export function MarketCard({ id, market }: Props) {
         <MarketCountdown market={market} />
       </div>
 
-      {/* Question */}
-      <p className="text-ink text-[17px] leading-snug line-clamp-2 mb-5">
-        {market.question}
-      </p>
+      <p className="text-ink text-[17px] leading-snug line-clamp-2 mb-5">{market.question}</p>
 
-      {/* The FHE differentiator */}
       {market.finalized ? (
         <div className="mb-5">
           <div className="h-2 w-full rounded-full overflow-hidden flex bg-canvas-mid">
@@ -86,18 +72,21 @@ export function MarketCard({ id, market }: Props) {
         </div>
       ) : (
         <div className="mb-5 py-3 rounded-lg border border-dashed border-hairline text-center overflow-hidden">
-          <Ciphertext length={18} className="text-[12px] text-mute/70 group-hover:text-[#ff7a17]/70 transition-colors" />
+          <Ciphertext
+            length={18}
+            className="text-[12px] text-mute/70 group-hover:text-[#ff7a17]/70 transition-colors"
+          />
           <div className="eyebrow text-body mt-1.5">Odds encrypted</div>
-          <div className="text-mute text-[11px] mt-0.5">hidden until resolution · no front-running</div>
+          <div className="text-mute text-[11px] mt-0.5">
+            hidden until resolution · no front-running
+          </div>
         </div>
       )}
 
-      {/* Pool total — hidden by FHE until finalized */}
       <div className="mb-3">
         <PoolStat market={market} variant="card" />
       </div>
 
-      {/* Footer CTA */}
       <div className="mt-auto flex items-center justify-between">
         {open ? (
           <div className="flex gap-2">

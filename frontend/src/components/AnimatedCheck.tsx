@@ -3,7 +3,13 @@ import { EASE } from '../lib/animations'
 
 // Checkmark that draws its stroke in on mount (SVG pathLength animation),
 // inside a circle that scales up softly. Signals a confirmed transaction.
-export function AnimatedCheck({ size = 20, className = '' }: { size?: number; className?: string }) {
+export function AnimatedCheck({
+  size = 20,
+  className = '',
+}: {
+  size?: number
+  className?: string
+}) {
   return (
     <motion.svg
       width={size}

@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react'
 
 export type Countdown = {
-  /** seconds remaining until deadline (0 if passed) */
-  remaining: number
-  /** true while deadline is still in the future */
-  active: boolean
-  /** "Xd Yh Zm" / "Yh Zm Ws" style label for the time left */
-  label: string
+  remaining: number // seconds remaining; 0 when past deadline
+  active: boolean   // true while remaining > 0
+  label: string     // "2d 4h 3m" | "1h 5m 30s" | "45s"
 }
 
 function format(remaining: number): string {
@@ -21,18 +18,27 @@ function format(remaining: number): string {
 }
 
 /**
- * Live countdown to a unix-seconds deadline. Ticks every second.
- * @param deadline unix timestamp (seconds)
+ * @param deadline Unix timestamp in seconds. Ticks every second (pauses when tab is hidden).
  */
 export function useCountdown(deadline: number): Countdown {
   const compute = (): number => Math.max(0, deadline - Math.floor(Date.now() / 1000))
   const [remaining, setRemaining] = useState<number>(compute)
 
   useEffect(() => {
-    // resync immediately on deadline change
-    setRemaining(compute)
-    const t = setInterval(() => setRemaining(compute), 1000)
-    return () => clearInterval(t)
+    setRemaining(compute())
+    const t = setInterval(() => {
+      if (!document.hidden) setRemaining(compute())
+    }, 1000)
+
+    function onVisibility() {
+      if (!document.hidden) setRemaining(compute())
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+
+    return () => {
+      clearInterval(t)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deadline])
 

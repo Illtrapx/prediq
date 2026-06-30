@@ -1,17 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { EASE } from '../lib/animations'
-
-// ─── Interactive hero widget ─────────────────────────────────────────────────
-// Lets the visitor compose a bet (amount + YES/NO) and watch it "encrypt" in
-// real time into a euint64-looking ciphertext handle. Every input change
-// re-runs the scramble, so the cipher visibly tracks the plaintext — the whole
-// point of the product, made tactile.
-//
-// Pure-render safe: no randomness during render. Scrambling runs in a post-mount
-// interval keyed off the current (amount, side). Honours prefers-reduced-motion.
-
-const HEX = '0123456789abcdef'
+import { HEX } from '../lib/hex'
 const HEAD = 12
 const TAIL = 6
 const TOTAL = HEAD + TAIL
@@ -101,9 +91,10 @@ export function HeroEncryptDemo({ className = '' }: { className?: string }) {
       </div>
 
       {/* Amount */}
-      <label className="eyebrow text-mute block mb-2">Stake amount</label>
+      <label htmlFor="hero-amount" className="eyebrow text-mute block mb-2">Stake amount</label>
       <div className="flex items-center gap-2 mb-5">
         <input
+          id="hero-amount"
           type="number"
           min={0}
           inputMode="decimal"
@@ -111,14 +102,13 @@ export function HeroEncryptDemo({ className = '' }: { className?: string }) {
           onChange={e => setAmount(e.target.value)}
           className="input-xai flex-1 font-mono text-lg"
           placeholder="100"
-          aria-label="Stake amount"
         />
         <span className="eyebrow text-mute">CST</span>
       </div>
 
       {/* Side toggle */}
-      <label className="eyebrow text-mute block mb-2">Your side</label>
-      <div className="grid grid-cols-2 gap-2 mb-6">
+      <p id="hero-side-label" className="eyebrow text-mute block mb-2">Your side</p>
+      <div role="group" aria-labelledby="hero-side-label" className="grid grid-cols-2 gap-2 mb-6">
         {(['YES', 'NO'] as const).map(s => (
           <button
             key={s}
@@ -140,6 +130,9 @@ export function HeroEncryptDemo({ className = '' }: { className?: string }) {
       </div>
 
       <div
+        role="status"
+        aria-live="polite"
+        aria-label={resolved ? `Encrypted output: ${cipherStr}` : 'Encrypting…'}
         className="font-mono text-sm sm:text-base tracking-wider break-all transition-colors min-h-[1.5em]"
         style={{ color: resolved ? '#6ee7b7' : '#dadbdf', ...glow }}
       >
@@ -153,9 +146,7 @@ export function HeroEncryptDemo({ className = '' }: { className?: string }) {
 
       {/* Make it unmistakable this is illustrative, not a live bet */}
       <div className="mt-5 pt-4 border-t border-hairline flex items-center justify-between gap-3">
-        <span className="text-mute/60 text-xs leading-snug">
-          Preview only — places no bet.
-        </span>
+        <span className="text-mute/60 text-xs leading-snug">Preview only — places no bet.</span>
         <a href="#markets" className="pill pill-outline px-3 py-1.5 text-[13px] whitespace-nowrap">
           Bet for real →
         </a>

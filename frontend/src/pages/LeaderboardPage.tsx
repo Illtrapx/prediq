@@ -28,12 +28,14 @@ export function LeaderboardPage({ address }: { address: string | null }) {
 
         const bets = new Map<string, number>()
         for (const l of betLogs) {
-          const w = (l.args?.bettor as string)?.toLowerCase()
+          const bettor = l.args?.bettor
+          const w = typeof bettor === 'string' ? bettor.toLowerCase() : null
           if (w) bets.set(w, (bets.get(w) ?? 0) + 1)
         }
         const correct = new Map<string, number>()
         for (const l of claimLogs) {
-          const w = (l.args?.bettor as string)?.toLowerCase()
+          const bettor = l.args?.bettor
+          const w = typeof bettor === 'string' ? bettor.toLowerCase() : null
           if (w) correct.set(w, (correct.get(w) ?? 0) + 1)
         }
 
@@ -43,26 +45,30 @@ export function LeaderboardPage({ address }: { address: string | null }) {
             return { wallet, bets: b, correct: cor, winRate: b > 0 ? (cor / b) * 100 : 0 }
           })
           .filter(r => r.bets >= 1)
-          .sort((a, b) => (b.winRate - a.winRate) || (b.correct - a.correct))
+          .sort((a, b) => b.winRate - a.winRate || b.correct - a.correct)
 
         if (alive) setRows(out)
       } catch {
         if (alive) setRows([])
       }
     })()
-    return () => { alive = false }
+    return () => {
+      alive = false
+    }
   }, [])
 
   const me = address?.toLowerCase() ?? null
 
   return (
     <PageMotion className="max-w-3xl mx-auto px-6 pt-12 pb-20">
-      <Link to="/" className="eyebrow hover:text-ink transition-colors mb-8 inline-block">← Markets</Link>
+      <Link to="/" className="eyebrow hover:text-ink transition-colors mb-8 inline-block">
+        ← Markets
+      </Link>
       <div className="eyebrow mb-3">Rankings</div>
       <h1 className="display text-4xl mb-3">Leaderboard</h1>
       <p className="text-body mb-9">
-        Ranked by win rate across resolved markets. Bet amounts and sides stay encrypted —
-        only on-chain activity (bets placed, payouts claimed) is counted.
+        Ranked by win rate across resolved markets. Bet amounts and sides stay encrypted — only
+        on-chain activity (bets placed, payouts claimed) is counted.
       </p>
 
       {rows === null && (
@@ -104,12 +110,18 @@ export function LeaderboardPage({ address }: { address: string | null }) {
                         className="eyebrow text-[10px] text-[#ff7a17] shrink-0"
                         animate={{ scale: [1, 1.05, 1] }}
                         transition={{ duration: 2, ease: 'easeInOut', repeat: Infinity }}
-                      >You</motion.span>
+                      >
+                        You
+                      </motion.span>
                     )}
                   </span>
                   <span className="text-right text-ink font-mono">{r.correct}</span>
                   <span className="text-right text-mute font-mono">{r.bets}</span>
-                  <AnimatedNumber value={r.winRate} suffix="%" className="text-right text-ink font-mono" />
+                  <AnimatedNumber
+                    value={r.winRate}
+                    suffix="%"
+                    className="text-right text-ink font-mono"
+                  />
                 </motion.div>
               )
             })}

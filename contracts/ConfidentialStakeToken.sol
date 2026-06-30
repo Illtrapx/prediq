@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause-Clear
 pragma solidity ^0.8.27;
 
 import {FHE, euint64} from "@fhevm/solidity/lib/FHE.sol";
@@ -6,7 +6,7 @@ import {ERC7984} from "@openzeppelin/confidential-contracts/token/ERC7984/ERC798
 import {ZamaEthereumConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
 
 /// @title ConfidentialStakeToken
-/// @author fhevm-hardhat-template
+/// @author Illtrapx
 /// @notice ERC7984 confidential fungible token used as stake currency in the PredictionMarket.
 ///         Balances and transfers are fully encrypted; individual amounts are not publicly observable.
 ///         The total supply is minted to the deployer at construction and can be distributed from there.

@@ -23,8 +23,7 @@ export type ShareCardProps = {
 const fmt = (ts: number) =>
   new Date(ts).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 
-const trunc = (addr: string) =>
-  addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : ''
+const trunc = (addr: string) => (addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : '')
 
 export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
   ({ marketQuestion, side, placedAt, deadline, walletAddress }, ref) => {
@@ -41,6 +40,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
        */
       <div
         ref={ref}
+        aria-hidden="true"
         style={{
           position: 'fixed',
           left: '-9999px',
@@ -69,15 +69,32 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '18px' }}>🔐</span>
-            <span style={{ fontWeight: 600, fontSize: '15px', letterSpacing: '-0.02em' }}>PredIQ</span>
+            <span style={{ fontWeight: 600, fontSize: '15px', letterSpacing: '-0.02em' }}>
+              PredIQ
+            </span>
           </div>
-          <span style={{ fontSize: '11px', color: '#7d8187', fontFamily: 'monospace', letterSpacing: '0.08em' }}>
+          <span
+            style={{
+              fontSize: '11px',
+              color: '#7d8187',
+              fontFamily: 'monospace',
+              letterSpacing: '0.08em',
+            }}
+          >
             prediq.app
           </span>
         </div>
 
         {/* ── Body ──────────────────────────────────── */}
-        <div style={{ flex: 1, padding: '24px 20px 0 20px', display: 'flex', flexDirection: 'column', gap: '0' }}>
+        <div
+          style={{
+            flex: 1,
+            padding: '24px 20px 0 20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0',
+          }}
+        >
           {/* Label */}
           <div
             style={{
@@ -135,10 +152,27 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 
           {/* Amount — always encrypted */}
           <div style={{ marginBottom: '16px' }}>
-            <div style={{ fontSize: '11px', color: '#7d8187', fontFamily: 'monospace', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '4px' }}>
+            <div
+              style={{
+                fontSize: '11px',
+                color: '#7d8187',
+                fontFamily: 'monospace',
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                marginBottom: '4px',
+              }}
+            >
               Amount
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '15px', color: '#dadbdf' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '15px',
+                color: '#dadbdf',
+              }}
+            >
               <span>🔐</span>
               <span>Encrypted</span>
             </div>
@@ -147,13 +181,31 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
           {/* Dates */}
           <div style={{ display: 'flex', gap: '24px', marginBottom: '20px' }}>
             <div>
-              <div style={{ fontSize: '10px', color: '#7d8187', fontFamily: 'monospace', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '2px' }}>
+              <div
+                style={{
+                  fontSize: '10px',
+                  color: '#7d8187',
+                  fontFamily: 'monospace',
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  marginBottom: '2px',
+                }}
+              >
                 Placed
               </div>
               <div style={{ fontSize: '13px', color: '#dadbdf' }}>{fmt(placedAt)}</div>
             </div>
             <div>
-              <div style={{ fontSize: '10px', color: '#7d8187', fontFamily: 'monospace', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '2px' }}>
+              <div
+                style={{
+                  fontSize: '10px',
+                  color: '#7d8187',
+                  fontFamily: 'monospace',
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  marginBottom: '2px',
+                }}
+              >
                 Closes
               </div>
               <div style={{ fontSize: '13px', color: '#dadbdf' }}>{fmt(deadline)}</div>
@@ -165,9 +217,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
             <div style={{ fontSize: '12px', color: '#7d8187', lineHeight: '1.6' }}>
               Encrypted with <span style={{ color: '#a0c3ec' }}>Zama FHE</span>
             </div>
-            <div style={{ fontSize: '12px', color: '#7d8187' }}>
-              Your position is private 🔐
-            </div>
+            <div style={{ fontSize: '12px', color: '#7d8187' }}>Your position is private 🔐</div>
           </div>
         </div>
 

@@ -62,7 +62,10 @@ function PrivacyDemo() {
             <span className="text-red-400 font-mono">NO · 35%</span>
           </div>
           <div className="h-2 rounded-full bg-[#1a1a1a] overflow-hidden">
-            <div className="h-full bg-green-500 rounded-full transition-all duration-500" style={{ width: '65%' }} />
+            <div
+              className="h-full bg-green-500 rounded-full transition-all duration-500"
+              style={{ width: '65%' }}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3 text-sm mt-2">
             <div className="rounded border border-green-900/40 bg-[#0d1a0d] p-4">
@@ -125,8 +128,12 @@ function PayoutCalc() {
           <span className="font-mono text-ink text-sm">{stake} CST</span>
         </div>
         <input
-          type="range" min={10} max={500} step={10}
-          value={stake} onChange={e => setStake(Number(e.target.value))}
+          type="range"
+          min={10}
+          max={500}
+          step={10}
+          value={stake}
+          onChange={e => setStake(Number(e.target.value))}
           className="w-full accent-[#ff7a17] cursor-pointer"
         />
       </div>
@@ -137,8 +144,12 @@ function PayoutCalc() {
           <span className="font-mono text-ink text-sm">{poolPct}%</span>
         </div>
         <input
-          type="range" min={10} max={90} step={5}
-          value={poolPct} onChange={e => setPoolPct(Number(e.target.value))}
+          type="range"
+          min={10}
+          max={90}
+          step={5}
+          value={poolPct}
+          onChange={e => setPoolPct(Number(e.target.value))}
           className="w-full accent-[#ff7a17] cursor-pointer"
         />
         <p className="text-[11px] text-mute mt-2">
@@ -148,9 +159,12 @@ function PayoutCalc() {
 
       <div className="border-t border-hairline pt-5">
         <div className="font-mono text-[12px] text-mute leading-relaxed mb-5 bg-[#0d0d0d] rounded p-3 border border-hairline">
-          <span className="text-mute/50">{'// payout formula'}</span><br />
-          payout = stake × totalPool / winningPool<br />
-          {'       '}= {stake} × {totalPool} / {winningPool}<br />
+          <span className="text-mute/50">{'// payout formula'}</span>
+          <br />
+          payout = stake × totalPool / winningPool
+          <br />
+          {'       '}= {stake} × {totalPool} / {winningPool}
+          <br />
           {'       '}= <span className="text-ink font-bold">{payout} CST</span>
         </div>
         <div className="grid grid-cols-3 gap-3 text-center">
@@ -180,20 +194,24 @@ export function HowItWorksPage() {
       <div className="mb-16">
         <div className="eyebrow text-mute mb-4">How it works</div>
         <h1 className="display text-4xl md:text-5xl mb-6 leading-[1.1]">
-          Odds hidden by FHE.<br />
-          Bet on what you know,<br />
+          Odds hidden by FHE.
+          <br />
+          Bet on what you know,
+          <br />
           not what others do.
         </h1>
         <p className="text-body text-lg leading-relaxed max-w-xl">
-          Prediq is a binary prediction market built on Zama's Fully Homomorphic Encryption protocol.
-          Every stake is encrypted end-to-end — pools stay hidden until the market closes.
+          Prediq is a binary prediction market built on Zama's Fully Homomorphic Encryption
+          protocol. Every stake is encrypted end-to-end — pools stay hidden until the market closes.
         </p>
       </div>
 
       {/* Privacy comparison */}
       <div className="mb-16">
         <div className="eyebrow text-mute mb-2">The difference</div>
-        <p className="text-mute text-sm mb-5">Toggle to see how your bet looks to the outside world.</p>
+        <p className="text-mute text-sm mb-5">
+          Toggle to see how your bet looks to the outside world.
+        </p>
         <PrivacyDemo />
       </div>
 
@@ -201,7 +219,7 @@ export function HowItWorksPage() {
       <div className="mb-16">
         <div className="eyebrow text-mute mb-6">Step by step</div>
         <div className="space-y-3">
-          {STEPS.map((s) => (
+          {STEPS.map(s => (
             <div
               key={s.n}
               className="card p-5 flex gap-5 hover:border-[#333] transition-all duration-200 hover:-translate-y-0.5 cursor-default"
@@ -240,8 +258,11 @@ export function HowItWorksPage() {
             { label: 'Zama FHEVM', sub: 'FHE execution layer' },
             { label: 'Ethereum Sepolia', sub: 'Live testnet deployment' },
             { label: 'Relayer SDK', sub: 'KMS decrypt + EIP-712 proofs' },
-          ].map((t) => (
-            <div key={t.label} className="card p-4 text-center hover:border-[#333] transition-colors">
+          ].map(t => (
+            <div
+              key={t.label}
+              className="card p-4 text-center hover:border-[#333] transition-colors"
+            >
               <div className="text-ink text-sm font-medium mb-1">{t.label}</div>
               <div className="eyebrow text-[10px] text-mute/60">{t.sub}</div>
             </div>
@@ -251,8 +272,12 @@ export function HowItWorksPage() {
 
       {/* CTA */}
       <div className="flex gap-3 flex-wrap">
-        <Link to="/" className="pill pill-primary">Browse markets</Link>
-        <Link to="/create" className="pill pill-outline">Create a market</Link>
+        <Link to="/" className="pill pill-primary">
+          Browse markets
+        </Link>
+        <Link to="/create" className="pill pill-outline">
+          Create a market
+        </Link>
       </div>
     </PageMotion>
   )

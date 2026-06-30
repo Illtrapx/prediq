@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Live demo
+    url: https://prediq-umber.vercel.app
+    about: Try the app on Sepolia testnet — no real funds needed.
+  - name: Zama FHEVM docs
+    url: https://docs.zama.ai/fhevm
+    about: FHE questions? Zama's documentation is the best starting point.

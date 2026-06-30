@@ -11,15 +11,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     log: true,
   });
 
-  console.log(`ConfidentialStakeToken contract: `, deployedStakeToken.address);
-
   const deployedPredictionMarket = await deploy("PredictionMarket", {
     from: deployer,
     args: [deployedStakeToken.address],
     log: true,
   });
-
-  console.log(`PredictionMarket contract: `, deployedPredictionMarket.address);
 };
 export default func;
 func.id = "deploy_v2"; // id required to prevent reexecution

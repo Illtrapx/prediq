@@ -9,12 +9,11 @@ import { createElement as h } from 'react'
 // the local `vercel dev` edge emulator lacks fetch — so verify on a deploy.
 export const config = { runtime: 'edge' }
 
-// Inter (one weight) fetched at runtime — satori needs real font data.
 const FONT_URL =
   'https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.18/files/inter-latin-600-normal.woff'
 
 function fmtDeadline(deadline: number): string {
-  if (!deadline) return 'Confidential prediction market'
+  if (!deadline || !Number.isFinite(deadline)) return 'Confidential prediction market'
   const ms = deadline * 1000
   const now = Date.now()
   if (now >= ms) return 'Market closed'
@@ -26,17 +25,19 @@ export default async function handler(req: Request) {
   try {
     return await render(req)
   } catch (err) {
-    const msg = err instanceof Error ? `${err.message}\n${err.stack ?? ''}` : String(err)
-    return new Response(`og error: ${msg}`, { status: 500, headers: { 'content-type': 'text/plain' } })
+    const msg = err instanceof Error ? err.message : 'Image render failed'
+    return new Response(`og error: ${msg}`, {
+      status: 500,
+      headers: { 'content-type': 'text/plain' },
+    })
   }
 }
 
 async function render(req: Request) {
-  // req.url is absolute on edge but can be a bare path under the node web
-  // handler / `vercel dev` — supply a base so URL() never throws.
   const { searchParams } = new URL(req.url, 'http://localhost')
   const rawQ = (searchParams.get('q') ?? 'A confidential prediction').slice(0, 140)
-  const deadline = Number(searchParams.get('deadline') ?? '0')
+  const deadlineRaw = Number(searchParams.get('deadline') ?? '0')
+  const deadline = Number.isFinite(deadlineRaw) ? deadlineRaw : 0
 
   let fontData: ArrayBuffer | undefined
   try {
@@ -63,12 +64,15 @@ async function render(req: Request) {
         color: '#fafafa',
       },
     },
-    // Header row — brand
     h(
       'div',
       { style: { display: 'flex', alignItems: 'center', gap: '14px' } },
       h('div', { style: { fontSize: '34px' } }, '🔐'),
-      h('div', { style: { fontSize: '30px', fontWeight: 600, letterSpacing: '-0.02em' } }, 'PredIQ'),
+      h(
+        'div',
+        { style: { fontSize: '30px', fontWeight: 600, letterSpacing: '-0.02em' } },
+        'PredIQ',
+      ),
       h(
         'div',
         {
@@ -83,7 +87,6 @@ async function render(req: Request) {
         'Confidential',
       ),
     ),
-    // Question
     h(
       'div',
       { style: { display: 'flex', flexDirection: 'column', gap: '22px' } },
@@ -119,14 +122,9 @@ async function render(req: Request) {
           },
           '🔒  Bet amount & side encrypted',
         ),
-        h(
-          'div',
-          { style: { fontSize: '22px', color: '#7d8187' } },
-          fmtDeadline(deadline),
-        ),
+        h('div', { style: { fontSize: '22px', color: '#7d8187' } }, fmtDeadline(deadline)),
       ),
     ),
-    // Footer
     h(
       'div',
       {
@@ -138,7 +136,7 @@ async function render(req: Request) {
           color: '#7d8187',
         },
       },
-      h('div', null, 'prediq-umber.vercel.app'),
+      h('div', null, (process.env.APP_ORIGIN ?? 'https://prediq-umber.vercel.app').replace(/^https?:\/\//, '')),
       h('div', { style: { color: '#ffd208' } }, 'Powered by Zama FHE'),
     ),
   )
@@ -146,8 +144,7 @@ async function render(req: Request) {
   return new ImageResponse(node, {
     width: 1200,
     height: 630,
-    fonts: fontData
-      ? [{ name: 'Inter', data: fontData, weight: 600, style: 'normal' }]
-      : undefined,
+    fonts: fontData ? [{ name: 'Inter', data: fontData, weight: 600, style: 'normal' }] : undefined,
+    headers: { 'Cache-Control': 's-maxage=3600, stale-while-revalidate=86400' },
   })
 }

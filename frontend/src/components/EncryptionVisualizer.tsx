@@ -1,16 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { EASE } from '../lib/animations'
+import { HEX, randHex } from '../lib/hex'
 
-// ─── Live encryption visualizer ──────────────────────────────────────────────
-// Watches a plaintext bet "encrypt" in real time: each character scrambles
-// through random hex, then resolves — left-to-right — into a ciphertext handle
-// that looks like a real euint64. Loops through a few sample bets.
-//
-// Pure-render safe: no randomness during render. All scrambling happens in an
-// interval that starts post-mount (mirrors the existing <Ciphertext /> pattern).
-
-const HEX = '0123456789abcdef'
 const PLAINTEXTS = ['100 CST · YES', '250 CST · NO', '50 CST · YES', '1000 CST · NO']
 
 // Timeline (ms) for one plaintext.
@@ -18,20 +10,19 @@ const ENCRYPT_MS = 1200 // scramble → resolve
 const HOLD_MS = 800 // show finished ciphertext
 const TICK_MS = 45 // scramble refresh cadence
 
-// Visible ciphertext shape: 0x + head…tail, both halves scramble independently.
 const HEAD = 10
 const TAIL = 4
 const TOTAL = HEAD + TAIL
 
-function randHex(n: number): string {
-  let out = ''
-  for (let i = 0; i < n; i++) out += HEX[Math.floor(Math.random() * 16)]
-  return out
-}
-
 type Variant = 'full' | 'compact'
 
-export function EncryptionVisualizer({ variant = 'full', className = '' }: { variant?: Variant; className?: string }) {
+export function EncryptionVisualizer({
+  variant = 'full',
+  className = '',
+}: {
+  variant?: Variant
+  className?: string
+}) {
   const [cycle, setCycle] = useState(0) // which plaintext + remount key
   const [cipher, setCipher] = useState('•'.repeat(TOTAL))
   const [resolved, setResolved] = useState(false)
@@ -45,6 +36,18 @@ export function EncryptionVisualizer({ variant = 'full', className = '' }: { var
 
     let tickTimer: ReturnType<typeof setInterval> | null = null
     let cycleTimer: ReturnType<typeof setTimeout> | null = null
+    let pausedAt: number | null = null
+
+    function stopTimers() {
+      if (tickTimer) {
+        clearInterval(tickTimer)
+        tickTimer = null
+      }
+      if (cycleTimer) {
+        clearTimeout(cycleTimer)
+        cycleTimer = null
+      }
+    }
 
     function beginCycle() {
       targetRef.current = randHex(TOTAL)
@@ -52,7 +55,6 @@ export function EncryptionVisualizer({ variant = 'full', className = '' }: { var
       setResolved(false)
 
       if (reduce) {
-        // Honour reduced motion: skip scrambling, show the resolved cipher.
         setCipher(targetRef.current)
         setResolved(true)
         cycleTimer = setTimeout(() => setCycle(c => c + 1), ENCRYPT_MS + HOLD_MS)
@@ -63,8 +65,6 @@ export function EncryptionVisualizer({ variant = 'full', className = '' }: { var
         const elapsed = Date.now() - startRef.current
         const p = Math.min(1, elapsed / ENCRYPT_MS)
         const target = targetRef.current
-        // Each position locks in at a staggered threshold across the window,
-        // giving the left-to-right "resolving" sweep.
         let out = ''
         for (let i = 0; i < TOTAL; i++) {
           const threshold = 0.1 + (i / TOTAL) * 0.85
@@ -74,16 +74,37 @@ export function EncryptionVisualizer({ variant = 'full', className = '' }: { var
         if (p >= 1) {
           setCipher(target)
           setResolved(true)
-          if (tickTimer) { clearInterval(tickTimer); tickTimer = null }
+          if (tickTimer) {
+            clearInterval(tickTimer)
+            tickTimer = null
+          }
           cycleTimer = setTimeout(() => setCycle(c => c + 1), HOLD_MS)
         }
       }, TICK_MS)
     }
 
-    beginCycle()
+    function onVisibilityChange() {
+      if (document.hidden) {
+        // Pause: record how far through we were, stop timers.
+        pausedAt = Date.now()
+        stopTimers()
+      } else {
+        // Resume: shift the start time forward by the hidden duration so the
+        // animation continues where it left off instead of jumping.
+        if (pausedAt !== null) {
+          startRef.current += Date.now() - pausedAt
+          pausedAt = null
+        }
+        if (!reduce) beginCycle()
+      }
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    if (!document.hidden) beginCycle()
+
     return () => {
-      if (tickTimer) clearInterval(tickTimer)
-      if (cycleTimer) clearTimeout(cycleTimer)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      stopTimers()
     }
   }, [cycle])
 

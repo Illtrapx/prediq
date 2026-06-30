@@ -5,7 +5,7 @@ import { EASE } from '../lib/animations'
 type ToastKind = 'success' | 'info' | 'error'
 type Toast = { id: number; kind: ToastKind; message: string }
 
-type ToastCtx = (message: string, kind?: ToastKind, durationMs?: number) => void
+type ToastCtx = (message: string, kind?: ToastKind) => void
 const Ctx = createContext<ToastCtx | null>(null)
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -66,7 +66,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <Ctx.Provider value={push}>
       {children}
-      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2.5 items-end pointer-events-none">
+      <div
+        role="log"
+        aria-live="polite"
+        aria-atomic="false"
+        aria-label="Notifications"
+        className="fixed top-4 right-4 z-50 flex flex-col gap-2.5 items-end pointer-events-none"
+      >
         <AnimatePresence>
           {toasts.map(t => (
             <div key={t.id} className="pointer-events-auto">

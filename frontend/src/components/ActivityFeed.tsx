@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import type { EventLog } from 'ethers'
 import { getPMReadContract, readProvider } from '../lib/contract'
 import { slideInRight, staggerContainer } from '../lib/animations'
+import { useVisibilityPolling } from '../hooks/useVisibilityPolling'
 
 type Entry = { bettor: string; ts: number; txHash: string }
 
@@ -57,12 +58,7 @@ export function ActivityFeed({ marketId }: { marketId: number }) {
     }
   }, [marketId])
 
-  useEffect(() => {
-    let alive = true
-    void load()
-    const t = setInterval(() => { if (alive) void load() }, 30000)
-    return () => { alive = false; clearInterval(t) }
-  }, [load])
+  useVisibilityPolling(load, 30000)
 
   return (
     <div className="card p-6">
@@ -70,13 +66,17 @@ export function ActivityFeed({ marketId }: { marketId: number }) {
         <h2 className="text-ink text-lg">Activity</h2>
         <span
           className="text-mute text-xs cursor-help"
-          title="Amount and side are encrypted — only you can decrypt your own position using the Zama relayer."
-        >ⓘ</span>
+          role="note"
+          aria-label="Amount and side are encrypted — only you can decrypt your own position using the Zama relayer."
+          tabIndex={0}
+        >
+          ⓘ
+        </span>
       </div>
       <p className="text-mute text-[12px] mb-5">Recent encrypted bets on this market.</p>
 
       {entries === null && (
-        <div className="flex flex-col gap-2.5">
+        <div role="status" aria-label="Loading activity" className="flex flex-col gap-2.5">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex items-center gap-3 animate-pulse">
               <div className="w-1.5 h-1.5 rounded-full bg-hairline" />
@@ -92,7 +92,12 @@ export function ActivityFeed({ marketId }: { marketId: number }) {
       )}
 
       {entries !== null && entries.length > 0 && (
-        <motion.div className="flex flex-col gap-2.5" variants={staggerContainer} initial="hidden" animate="show">
+        <motion.div
+          className="flex flex-col gap-2.5"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+        >
           <AnimatePresence initial={false}>
             {entries.map((e, i) => (
               <motion.div
@@ -107,8 +112,11 @@ export function ActivityFeed({ marketId }: { marketId: number }) {
                   href={`https://sepolia.etherscan.io/tx/${e.txHash}`}
                   target="_blank"
                   rel="noreferrer"
+                  aria-label={`Encrypted bet from ${truncate(e.bettor)} — view on Etherscan`}
                   className="font-mono text-body hover:text-ink transition-colors"
-                >{truncate(e.bettor)}</a>
+                >
+                  {truncate(e.bettor)}
+                </a>
                 <span className="text-mute">placed an encrypted bet</span>
                 <span className="text-mute ml-auto shrink-0">{ago(e.ts)}</span>
               </motion.div>

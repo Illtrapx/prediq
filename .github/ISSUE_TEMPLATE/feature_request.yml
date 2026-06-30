@@ -1,0 +1,59 @@
+name: Feature Request
+description: Propose a new feature or improvement
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea for PredIQ? Describe it below. The more context you give, the easier it is to evaluate and prioritize.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Smart contract / FHE logic
+        - Frontend / UI
+        - API
+        - Documentation
+        - Tooling / DX
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or motivation
+      description: What's the gap or pain point this addresses?
+      placeholder: "As a market creator, I can't set an oracle for automatic resolution — I have to resolve manually, which is a trust bottleneck."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      placeholder: "Add an optional Chainlink price-feed address to createMarket(). If set, resolve() delegates to the oracle result."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      placeholder: UMA optimistic oracle, Pyth, off-chain resolver bot, …
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Links, prior art, diagrams, or anything else useful.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this isn't a duplicate.
+          required: true

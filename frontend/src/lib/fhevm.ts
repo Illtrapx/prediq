@@ -7,7 +7,7 @@ import type { FhevmInstance, createInstance } from '@zama-fhe/relayer-sdk/web'
 type Eip1193 = Parameters<typeof createInstance>[0]['network']
 
 let instance: FhevmInstance | null = null
-let initializing = false
+let initPromise: Promise<FhevmInstance> | null = null
 let storedProvider: Eip1193 | null = null
 
 // The wallet layer (wagmi/MetaMask) sets the active EIP-1193 provider here.
@@ -16,31 +16,33 @@ export function setFhevmProvider(provider: Eip1193) {
   if (storedProvider !== provider) {
     storedProvider = provider
     instance = null
+    initPromise = null
   }
 }
 
 export async function getFhevmInstance(): Promise<FhevmInstance> {
   if (instance) return instance
   if (!storedProvider) throw new Error('No wallet provider set. Connect a wallet first.')
-  if (initializing) {
-    await new Promise<void>(res => {
-      const t = setInterval(() => { if (instance) { clearInterval(t); res() } }, 100)
+  // Single-flight: if init is already in progress, share the same Promise —
+  // no polling loop, no artificial delays.
+  if (!initPromise) {
+    const provider = storedProvider
+    initPromise = (async () => {
+      const { createInstance, initSDK, SepoliaConfig } = await import('@zama-fhe/relayer-sdk/web')
+      await initSDK()
+      const inst = await createInstance({ ...SepoliaConfig, network: provider })
+      instance = inst
+      return inst
+    })().catch(err => {
+      initPromise = null
+      throw err
     })
-    return instance!
   }
-  initializing = true
-  try {
-    const { createInstance, initSDK, SepoliaConfig } = await import('@zama-fhe/relayer-sdk/web')
-    await initSDK()
-    instance = await createInstance({ ...SepoliaConfig, network: storedProvider })
-  } finally {
-    initializing = false
-  }
-  return instance!
+  return initPromise
 }
 
 export function resetFhevmInstance() {
   instance = null
-  initializing = false
+  initPromise = null
   storedProvider = null
 }

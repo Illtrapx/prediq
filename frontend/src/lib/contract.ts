@@ -2,13 +2,13 @@ import { Contract, JsonRpcProvider, type ContractRunner } from 'ethers'
 import PredictionMarketABI from '../contracts/PredictionMarket.json'
 import ConfidentialStakeTokenABI from '../contracts/ConfidentialStakeToken.json'
 import { PM_ADDRESS, CST_ADDRESS } from '../contracts/addresses'
+import { SEPOLIA_RPC_URL } from './constants'
 
 // Dedicated read-only RPC. Routing view calls through the wallet provider
 // (MetaMask) causes "Wallet timeout" on eth_blockNumber etc.
 // staticNetwork avoids repeated eth_chainId probes.
-const READ_RPC = 'https://ethereum-sepolia-rpc.publicnode.com'
 export const readProvider = new JsonRpcProvider(
-  READ_RPC,
+  SEPOLIA_RPC_URL,
   { chainId: 11155111, name: 'sepolia' },
   { staticNetwork: true },
 )

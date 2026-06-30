@@ -5,7 +5,13 @@ import { useCountdown } from '../hooks/useCountdown'
 // - future deadline      → "Closes in Xd Yh Zm" (ticks every second)
 // - past deadline, open   → "⏰ CLOSED — awaiting resolution"
 // - resolved/finalized    → "✅ Resolved · YES won"
-export function MarketCountdown({ market, className = '' }: { market: MarketStruct; className?: string }) {
+export function MarketCountdown({
+  market,
+  className = '',
+}: {
+  market: MarketStruct
+  className?: string
+}) {
   const { active, label } = useCountdown(Number(market.resolveDeadline))
 
   if (market.resolved || market.finalized) {
@@ -17,7 +23,9 @@ export function MarketCountdown({ market, className = '' }: { market: MarketStru
   }
 
   if (!active) {
-    return <span className={`eyebrow text-[#ffc285] ${className}`}>⏰ CLOSED — awaiting resolution</span>
+    return (
+      <span className={`eyebrow text-[#ffc285] ${className}`}>⏰ CLOSED — awaiting resolution</span>
+    )
   }
 
   return (

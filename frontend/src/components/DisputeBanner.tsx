@@ -45,7 +45,9 @@ export function DisputeBanner({ resolvedAt, resolverAddress, resolutionSource, t
               try {
                 const u = new URL(resolutionSource)
                 if (u.protocol === 'http:' || u.protocol === 'https:') safe = resolutionSource
-              } catch { /* ignore */ }
+              } catch {
+                /* ignore */
+              }
               return safe ? (
                 <a
                   href={safe}

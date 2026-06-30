@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { getPMReadContract } from '../lib/contract'
 import type { MarketStruct } from '../lib/contract'
+import { getMarketStatus } from '../lib/market'
 import { PageMotion } from '../components/PageMotion'
 import { getMyBets } from '../lib/mybets'
 import type { MyBet } from '../lib/mybets'
@@ -20,7 +21,7 @@ function ShareBetButton({ row, address }: { row: Row; address: string }) {
     side: row.side,
     txHash: row.txHash ?? null,
   })
-  const deadline = row.market ? Number(row.market.resolveDeadline) * 1000 : Date.now() + 86400_000
+  const deadline = row.market ? Number(row.market.resolveDeadline) * 1000 : 0
 
   return (
     <>
@@ -34,26 +35,22 @@ function ShareBetButton({ row, address }: { row: Row; address: string }) {
         walletAddress={address}
       />
       <button
-        onClick={e => { e.preventDefault(); void shareToX() }}
+        onClick={e => {
+          e.preventDefault()
+          void shareToX()
+        }}
         disabled={capturing}
         className="pill pill-outline px-3 py-1.5 text-[11px] shrink-0"
         title="Share prediction on X"
       >
-        {capturing
-          ? <span className="spin inline-block w-3 h-3 border-2 border-current/40 border-t-transparent rounded-full" />
-          : '𝕏'}
+        {capturing ? (
+          <span className="spin inline-block w-3 h-3 border-2 border-current/40 border-t-transparent rounded-full" />
+        ) : (
+          '𝕏'
+        )}
       </button>
     </>
   )
-}
-
-function statusLabel(m?: MarketStruct): { label: string; dot: string } {
-  if (!m) return { label: 'UNKNOWN', dot: '#7d8187' }
-  if (m.finalized) return { label: 'FINALIZED', dot: '#a0c3ec' }
-  if (m.resolved) return { label: 'RESOLVED', dot: '#ff7a17' }
-  const now = Math.floor(Date.now() / 1000)
-  if (Number(m.resolveDeadline) < now) return { label: 'CLOSED', dot: '#7d8187' }
-  return { label: 'OPEN', dot: '#ffffff' }
 }
 
 export function MyBetsPage({ address }: Props) {
@@ -63,12 +60,27 @@ export function MyBetsPage({ address }: Props) {
   useEffect(() => {
     // Data-loading effect: reads localStorage bets + on-chain market state.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (!address) { setRows([]); setLoading(false); return }
+    if (!address) {
+      setRows([])
+      setLoading(false)
+      return
+    }
     const bets = getMyBets(address).sort((a, b) => b.ts - a.ts)
-    if (bets.length === 0) { setRows([]); setLoading(false); return }
+    if (bets.length === 0) {
+      setRows([])
+      setLoading(false)
+      return
+    }
     const contract = getPMReadContract()
     const ids = [...new Set(bets.map(b => b.marketId))]
-    Promise.all(ids.map(id => contract.getMarket(id).then((m: MarketStruct) => [id, m] as const).catch(() => [id, undefined] as const)))
+    Promise.all(
+      ids.map(id =>
+        contract
+          .getMarket(id)
+          .then((m: MarketStruct) => [id, m] as const)
+          .catch(() => [id, undefined] as const),
+      ),
+    )
       .then(pairs => {
         const map = new Map(pairs)
         setRows(bets.map(b => ({ ...b, market: map.get(b.marketId) })))
@@ -80,24 +92,26 @@ export function MyBetsPage({ address }: Props) {
 
   return (
     <PageMotion className="max-w-3xl mx-auto px-6 pt-12 pb-20">
-      <Link to="/" className="eyebrow hover:text-ink transition-colors mb-8 inline-block">← Markets</Link>
+      <Link to="/" className="eyebrow hover:text-ink transition-colors mb-8 inline-block">
+        ← Markets
+      </Link>
       <div className="eyebrow mb-3">Your activity</div>
       <h1 className="display text-4xl mb-3">My bets</h1>
       <p className="text-body mb-9">
-        Your stake amount and side are visible only here, on the device that placed
-        the bet. On-chain they stay encrypted until the market resolves.
+        Your stake amount and side are visible only here, on the device that placed the bet.
+        On-chain they stay encrypted until the market resolves.
       </p>
 
       {!address && (
-        <div className="card p-6 fade-up">
-          <h2 className="text-ink text-lg mb-2">Connect your wallet</h2>
+        <div className="text-center py-16 card border-dashed fade-up">
+          <p className="text-ink mb-2">Connect your wallet</p>
           <p className="text-mute text-sm">Sign in to see the bets you've placed.</p>
         </div>
       )}
 
       {address && loading && (
-        <div className="flex items-center gap-2 text-mute text-sm py-8">
-          <span className="spin inline-block w-4 h-4 border-2 border-white/40 border-t-transparent rounded-full" />
+        <div className="flex items-center justify-center gap-2 text-mute text-sm py-12">
+          <span aria-hidden="true" className="spin inline-block w-4 h-4 border-2 border-white/40 border-t-transparent rounded-full" />
           Loading your bets…
         </div>
       )}
@@ -105,7 +119,9 @@ export function MyBetsPage({ address }: Props) {
       {address && !loading && rows.length === 0 && (
         <div className="text-center py-20 card border-dashed">
           <p className="text-mute">No bets yet.</p>
-          <Link to="/" className="text-ink hover:underline text-sm mt-3 inline-block">Browse markets →</Link>
+          <Link to="/" className="text-ink hover:underline text-sm mt-3 inline-block">
+            Browse markets →
+          </Link>
         </div>
       )}
 
@@ -129,12 +145,17 @@ export function MyBetsPage({ address }: Props) {
 
           {/* Bet rows */}
           <div className="flex flex-col gap-3">
-            {rows.map((r, i) => {
-              const st = statusLabel(r.market)
+            {rows.map(r => {
+              const st = getMarketStatus(r.market)
               return (
-                <Link key={i} to={`/market/${r.marketId}`}
-                  className="card p-5 flex items-center gap-4 hover:border-white/25 transition-colors fade-up">
-                  <div className={`pill ${r.side ? 'pill-primary' : 'pill-outline'} pointer-events-none px-4 py-2 text-[13px]`}>
+                <Link
+                  key={`${r.marketId}-${r.ts}`}
+                  to={`/market/${r.marketId}`}
+                  className="card p-5 flex items-center gap-4 hover:border-white/25 transition-colors fade-up"
+                >
+                  <div
+                    className={`pill ${r.side ? 'pill-primary' : 'pill-outline'} pointer-events-none px-4 py-2 text-[13px]`}
+                  >
                     {r.side ? 'YES' : 'NO'}
                   </div>
                   <div className="flex-1 min-w-0">

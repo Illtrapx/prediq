@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { ZeroHash, type JsonRpcSigner } from 'ethers'
 import { getCSTReadContract } from '../lib/contract'
 import { getFhevmInstance } from '../lib/fhevm'
+import { signEip712 } from '../lib/eip712'
 import { CST_ADDRESS } from '../contracts/addresses'
 import { AnimatedNumber } from './AnimatedNumber'
 import { useToast } from './Toast'
@@ -35,12 +36,7 @@ async function getDecryptAuth(address: string, signer: JsonRpcSigner): Promise<A
     const keypair = fhevm.generateKeypair()
     const startTs = Math.floor(Date.now() / 1000)
     const eip712 = fhevm.createEIP712(keypair.publicKey, [CST_ADDRESS], startTs, DURATION_DAYS)
-    // ethers v6 derives the EIP712Domain separator itself and rejects it being
-    // present in `types` — strip it from the relayer SDK's types before signing.
-    const types = { ...(eip712.types as Record<string, unknown>) }
-    delete (types as Record<string, unknown>).EIP712Domain
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const sig = await signer.signTypedData(eip712.domain as any, types as any, eip712.message as any)
+    const sig = await signEip712(signer, eip712)
     authCache = { address, keypair, sig, startTs }
     return authCache
   })()
@@ -62,7 +58,10 @@ export function CstBalance({ address, signer }: Props) {
   const reqRef = useRef(0)
 
   const refresh = useCallback(async () => {
-    if (!address) { setBalance(null); return }
+    if (!address) {
+      setBalance(null)
+      return
+    }
     const reqId = ++reqRef.current
     setLoading(true)
     setError('')
@@ -101,11 +100,17 @@ export function CstBalance({ address, signer }: Props) {
   }, [address, signer])
 
   // Fetch on mount / address change, and on a global refresh event.
+  // To trigger a balance refresh from elsewhere (e.g. after a bet reduces the
+  // encrypted balance), dispatch: `window.dispatchEvent(new CustomEvent('cst:refresh'))`
   useEffect(() => {
     refresh()
-    const handler = () => { refresh() }
+    const handler = () => {
+      refresh()
+    }
     window.addEventListener('cst:refresh', handler)
-    return () => { window.removeEventListener('cst:refresh', handler) }
+    return () => {
+      window.removeEventListener('cst:refresh', handler)
+    }
   }, [refresh])
 
   async function getFaucet() {
@@ -144,13 +149,18 @@ export function CstBalance({ address, signer }: Props) {
           ''
         ) : loading ? (
           <>
-            <span className="spin inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full" />
-            <span className="font-mono">…</span>
+            <span aria-hidden="true" className="spin inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full" />
+            <span className="sr-only">Loading balance</span>
+            <span aria-hidden="true" className="font-mono">…</span>
           </>
         ) : balance === null ? (
-          <>Balance: <span className="text-ink font-mono">—</span> CST</>
+          <>
+            Balance: <span className="text-ink font-mono">—</span> CST
+          </>
         ) : (
-          <>Balance: <AnimatedNumber value={Number(balance)} className="text-ink font-mono" /> CST</>
+          <>
+            Balance: <AnimatedNumber value={Number(balance)} className="text-ink font-mono" /> CST
+          </>
         )}
       </span>
       <button
@@ -159,11 +169,15 @@ export function CstBalance({ address, signer }: Props) {
         disabled={!address || minting}
         className="pill pill-outline px-3 py-1 text-[13px] disabled:opacity-50"
       >
-        {minting && <span className="spin inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full" />}
+        {minting && (
+          <span aria-hidden="true" className="spin inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full" />
+        )}
         {minting ? 'Minting…' : 'Get test CST'}
       </button>
       {error && (
-        <span className="text-[12px]" style={{ color: '#ffc285' }}>{error}</span>
+        <span className="text-[12px]" style={{ color: '#ffc285' }}>
+          {error}
+        </span>
       )}
     </div>
   )

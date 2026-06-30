@@ -1,16 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { ethers } from 'ethers'
+import { PM_ADDRESS, RPC_URL } from './_lib/config'
 
-// Crawler-facing share page for a single market. Pure SPAs can't inject
-// per-route OG tags (bots don't run JS), so this serverless route renders
-// real meta tags (question + dynamic /api/og image) and bounces humans to the
-// in-app market route.
-//   /m/:id  →  rewrite  →  /api/share?id=:id
-
-const PM_ADDRESS = '0x5B6Cb01B6AcEBa5148e16fBEa3d1f77e434004d9'
-const RPC_URL = process.env.SEPOLIA_RPC_URL ?? 'https://ethereum-sepolia-rpc.publicnode.com'
-
-// Minimal ABI — just enough to read the public question + deadline.
 const ABI = [
   'function getMarket(uint256 id) view returns (tuple(string question, uint64 resolveDeadline, address resolver, bool resolved, bool winningSide, bool finalized, bool hasBets, uint64 totalPool, uint64 winningPool) market)',
 ]
@@ -24,12 +15,18 @@ function esc(s: string): string {
     .replace(/'/g, '&#39;')
 }
 
+// Canonical origin — never derived from request headers to prevent host-header injection.
+// Set APP_ORIGIN in Vercel env vars to override (e.g. for custom domains).
+const ORIGIN = (process.env.APP_ORIGIN ?? 'https://prediq-umber.vercel.app').replace(/\/$/, '')
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed.' })
+  }
+
   const idRaw = Array.isArray(req.query.id) ? req.query.id[0] : req.query.id
   const id = Number(idRaw)
-  const host = (req.headers['x-forwarded-host'] ?? req.headers.host ?? 'prediq-umber.vercel.app').toString()
-  const origin = `https://${host}`
-  const appUrl = `${origin}/market/${Number.isFinite(id) ? id : ''}`
+  const appUrl = `${ORIGIN}/market/${Number.isFinite(id) ? id : ''}`
 
   let question = 'A confidential prediction on PredIQ'
   let deadline = 0
@@ -42,12 +39,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       deadline = Number(m?.resolveDeadline ?? 0)
     }
   } catch {
-    /* fall back to defaults — still render valid tags */
+    /* fall back to defaults */
   }
 
   const title = esc(question)
   const desc = 'Bet amount and side stay encrypted on-chain via Zama FHE until the market resolves.'
-  const ogImage = `${origin}/api/og?q=${encodeURIComponent(question.slice(0, 140))}&deadline=${deadline}`
+  const ogImage = `${ORIGIN}/api/og?q=${encodeURIComponent(question.slice(0, 140))}&deadline=${deadline}`
 
   const html = `<!doctype html>
 <html lang="en">
@@ -78,7 +75,6 @@ Redirecting to <a href="${appUrl}" style="color:#a0c3ec">${esc(question)}</a>…
 </html>`
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8')
-  // Cache at the edge so repeated unfurls don't re-hit the RPC.
   res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=86400')
   return res.status(200).send(html)
 }

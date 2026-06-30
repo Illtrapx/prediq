@@ -1,7 +1,7 @@
 # fhevm
 fhevmTemp
 
-# directories
+# hardhat / build output
 .coverage_artifacts
 .coverage_cache
 .coverage_contracts
@@ -10,20 +10,40 @@ build
 cache
 coverage
 dist
-node_modules
 types
 deployments
 tmp
 
-# files
-*.env
-*.log
-.DS_Store
-.pnp.*
-coverage.json
+# dependencies
+node_modules
 pnpm-lock.yaml
 yarn.lock
 
-# local tooling (not part of the project)
+# env and secrets
+*.env
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# coverage
+coverage.json
+lcov.info
+
+# OS
+.DS_Store
+Thumbs.db
+
+# editors
+.idea/
+*.suo
+*.sw?
+
+# local tooling
 CLAUDE.md
 .claude/

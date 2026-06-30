@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { getPMReadContract } from '../lib/contract'
@@ -30,9 +30,13 @@ export function MarketListPage() {
     else setSearchParams({ category: t.toLowerCase() }, { replace: false })
   }
 
-  const visible = activeTab === 'All'
-    ? markets
-    : markets.filter(({ id }) => (cats[id] ?? 'Other') === activeTab)
+  const visible = useMemo(
+    () =>
+      activeTab === 'All'
+        ? markets
+        : markets.filter(({ id }) => (cats[id] ?? 'Other') === activeTab),
+    [markets, cats, activeTab],
+  )
 
   function onHeroMove(e: React.MouseEvent<HTMLElement>) {
     const el = heroRef.current
@@ -44,17 +48,27 @@ export function MarketListPage() {
 
   useEffect(() => {
     const contract = getPMReadContract()
-    contract.marketCount().then(async (n: bigint) => {
-      const count = Number(n)
-      if (count === 0) { setMarkets([]); setLoading(false); return }
-      const all = await Promise.all(
-        Array.from({ length: count }, (_, i) =>
-          contract.getMarket(i).then((m: MarketStruct) => ({ id: i, market: m }))
+    contract
+      .marketCount()
+      .then(async (n: bigint) => {
+        const count = Number(n)
+        if (count === 0) {
+          setMarkets([])
+          setLoading(false)
+          return
+        }
+        const all = await Promise.all(
+          Array.from({ length: count }, (_, i) =>
+            contract.getMarket(i).then((m: MarketStruct) => ({ id: i, market: m })),
+          ),
         )
-      )
-      setMarkets(all.reverse())
-    }).catch(console.error).finally(() => setLoading(false))
-    getMarketCategories().then(setCats).catch(() => setCats({}))
+        setMarkets(all.reverse())
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false))
+    getMarketCategories()
+      .then(setCats)
+      .catch(() => setCats({}))
   }, [])
 
   return (
@@ -71,16 +85,22 @@ export function MarketListPage() {
             Powered by FHE · live on Sepolia
           </div>
           <h1 className="display text-5xl sm:text-7xl">
-            Bet without<br />revealing your hand
+            Bet without
+            <br />
+            revealing your hand
           </h1>
           <p className="text-body text-lg mt-7 max-w-xl leading-relaxed">
-            A prediction market where your stake amount and the side you picked stay
-            fully encrypted on-chain — until the market resolves. No whale-watching,
-            no copy-trading, no front-running.
+            A prediction market where your stake amount and the side you picked stay fully encrypted
+            on-chain — until the market resolves. No whale-watching, no copy-trading, no
+            front-running.
           </p>
           <div className="flex flex-wrap items-center gap-3 mt-9">
-            <Link to="/create" className="pill pill-primary">Create a market</Link>
-            <a href="#markets" className="pill pill-outline">Browse markets</a>
+            <Link to="/create" className="pill pill-primary">
+              Create a market
+            </Link>
+            <a href="#markets" className="pill pill-outline">
+              Browse markets
+            </a>
           </div>
           <div className="mt-8">
             <EncryptionVisualizer variant="compact" />
@@ -105,37 +125,53 @@ export function MarketListPage() {
             <div className="eyebrow mb-2">Markets</div>
             <h2 className="display text-3xl">Active markets</h2>
           </div>
-          <Link to="/create" className="pill pill-outline">New market</Link>
+          <Link to="/create" className="pill pill-outline">
+            New market
+          </Link>
         </div>
 
         {/* Category filter tabs — selection persisted in ?category= */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-2 mb-8">
           {TABS.map(t => (
             <button
               key={t}
               type="button"
               onClick={() => selectTab(t)}
+              aria-pressed={activeTab === t}
               className={`pill px-4 py-1.5 text-[13px] ${activeTab === t ? 'pill-primary' : 'pill-outline'}`}
-            >{t}</button>
+            >
+              {t}
+            </button>
           ))}
         </div>
 
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[...Array(4)].map((_, i) => <MarketCardSkeleton key={i} />)}
+            {[...Array(4)].map((_, i) => (
+              <MarketCardSkeleton key={i} />
+            ))}
           </div>
         )}
 
         {!loading && markets.length === 0 && (
           <div className="text-center py-20 card border-dashed">
             <p className="text-mute">No markets yet.</p>
-            <Link to="/create" className="text-ink hover:underline text-sm mt-3 inline-block">Create the first one →</Link>
+            <Link to="/create" className="text-ink hover:underline text-sm mt-3 inline-block">
+              Create the first one →
+            </Link>
           </div>
         )}
 
         {!loading && markets.length > 0 && visible.length === 0 && (
           <div className="text-center py-20 card border-dashed">
             <p className="text-mute">No {activeTab} markets yet.</p>
+            <button
+              type="button"
+              onClick={() => selectTab('All')}
+              className="text-ink hover:underline text-sm mt-3 inline-block"
+            >
+              See all markets →
+            </button>
           </div>
         )}
 

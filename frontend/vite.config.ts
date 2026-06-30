@@ -18,7 +18,9 @@ export default defineConfig({
         // loads in parallel with the entry and stays cached across app redeploys.
         manualChunks: {
           react: ['react', 'react-dom', 'react-router-dom'],
+          motion: ['framer-motion'],
           ethers: ['ethers'],
+          wallet: ['wagmi', 'viem', '@rainbow-me/rainbowkit'],
         },
       },
     },

@@ -9,8 +9,7 @@
 
 import { useRef, useState, useCallback } from 'react'
 import type { RefObject } from 'react'
-
-const VERCEL_URL = 'https://prediq-umber.vercel.app'
+import { VERCEL_URL } from '../lib/constants'
 
 type Options = {
   marketQuestion: string
@@ -44,7 +43,7 @@ async function captureCard(ref: RefObject<HTMLDivElement | null>): Promise<Blob>
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error('Canvas toBlob returned null'))),
+      blob => (blob ? resolve(blob) : reject(new Error('Canvas toBlob returned null'))),
       'image/png',
     )
   })

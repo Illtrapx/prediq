@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { BrowserProvider, JsonRpcSigner, type Eip1193Provider } from 'ethers'
 import { useAccount, useConnectorClient, useDisconnect } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
@@ -6,11 +6,14 @@ import { sepolia } from 'wagmi/chains'
 import { setFhevmProvider, getFhevmInstance } from '../lib/fhevm'
 
 export type WalletState = {
+  /** False while wagmi is still auto-reconnecting on mount. Gate any auth-dependent UI on this. */
   ready: boolean
+  /** True when a wallet is connected (any chain). Note: `provider` and `signer` are null when on the wrong chain — check `wrongNetwork` for that. */
   authenticated: boolean
   provider: BrowserProvider | null
   signer: JsonRpcSigner | null
   address: string | null
+  /** Connected to the wrong chain (not Sepolia). `provider`/`signer` are null in this state. */
   wrongNetwork: boolean
   connect: () => void
   disconnect: () => void
@@ -28,11 +31,15 @@ export function useWallet(): WalletState {
 
   useEffect(() => {
     if (!isConnected || !client || !address) {
-      setProvider(null); setSigner(null); setWrongNetwork(false)
+      setProvider(null)
+      setSigner(null)
+      setWrongNetwork(false)
       return
     }
     if (chainId !== sepolia.id) {
-      setWrongNetwork(true); setProvider(null); setSigner(null)
+      setWrongNetwork(true)
+      setProvider(null)
+      setSigner(null)
       return
     }
     setWrongNetwork(false)
@@ -45,7 +52,9 @@ export function useWallet(): WalletState {
     // Pre-warm the FHEVM instance now (WASM import + initSDK compile + KMS key
     // fetch) so the first "Encrypt & bet" pays only for proof generation, not a
     // cold ~1 MB load. No signature needed — createInstance just fetches keys.
-    void getFhevmInstance().catch(() => { /* warms on demand if this fails */ })
+    void getFhevmInstance().catch(() => {
+      /* warms on demand if this fails */
+    })
 
     const ethersProvider = new BrowserProvider(eip1193, {
       chainId: sepolia.id,
@@ -55,6 +64,8 @@ export function useWallet(): WalletState {
     setSigner(new JsonRpcSigner(ethersProvider, address))
   }, [isConnected, client, address, chainId])
 
+  const connect = useCallback(() => openConnectModal?.(), [openConnectModal])
+
   return {
     ready: !isReconnecting,
     authenticated: isConnected,
@@ -62,7 +73,7 @@ export function useWallet(): WalletState {
     signer,
     address: address ?? null,
     wrongNetwork,
-    connect: () => openConnectModal?.(),
-    disconnect: () => disconnect(),
+    connect,
+    disconnect,
   }
 }

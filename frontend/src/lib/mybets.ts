@@ -4,9 +4,9 @@
 
 export type MyBet = {
   marketId: number
-  side: boolean   // true = YES
-  amount: string  // plaintext stake, as entered
-  ts: number      // epoch ms
+  side: boolean // true = YES
+  amount: string // plaintext stake, as entered
+  ts: number // epoch ms
   txHash?: string
 }
 

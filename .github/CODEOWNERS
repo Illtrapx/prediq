@@ -1,0 +1,13 @@
+# Global fallback — all PRs request review from the maintainer
+* @Illtrapx
+
+# Smart contracts: extra scrutiny for any Solidity change
+/contracts/ @Illtrapx
+/deploy/ @Illtrapx
+/test/ @Illtrapx
+
+# Frontend
+/frontend/ @Illtrapx
+
+# CI + repo config
+/.github/ @Illtrapx
