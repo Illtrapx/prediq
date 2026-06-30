@@ -80,8 +80,8 @@ describe("PredictionMarketSepolia", function () {
     progress(`publicDecrypt pools...`);
     const [yesPool, noPool] = await contract.getPools(id);
     const dec = await fhevm.publicDecrypt([yesPool, noPool]);
-    expect(dec.clearValues[yesPool]).to.eq(100n);
-    expect(dec.clearValues[noPool]).to.eq(0n);
+    expect(dec.clearValues[yesPool as `0x${string}`]).to.eq(100n);
+    expect(dec.clearValues[noPool as `0x${string}`]).to.eq(0n);
 
     progress(`finalizePools(${id})...`);
     await (await contract.connect(deployer).finalizePools(id, dec.abiEncodedClearValues, dec.decryptionProof)).wait();

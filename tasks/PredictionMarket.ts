@@ -138,7 +138,9 @@ task("task:pm-finalize", "Publicly decrypts the pools and submits them on-chain"
 
     const [yesPool, noPool] = await contract.getPools(BigInt(args.id));
     const dec = await fhevm.publicDecrypt([yesPool, noPool]);
-    console.log(`Decrypted pools: yes=${dec.clearValues[yesPool]} no=${dec.clearValues[noPool]}`);
+    console.log(
+      `Decrypted pools: yes=${dec.clearValues[yesPool as `0x${string}`]} no=${dec.clearValues[noPool as `0x${string}`]}`,
+    );
 
     const tx = await contract
       .connect(signers[0])

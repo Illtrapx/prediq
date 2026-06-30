@@ -7,12 +7,12 @@ import { supabase } from '../lib/supabase'
  * `market_creator_applications` table keyed on lowercased wallet address.
  */
 export type AccessStatus =
-  | 'loading'       // querying Supabase
-  | 'disconnected'  // no wallet connected
-  | 'none'          // connected but no application on record
-  | 'pending'       // application submitted, awaiting admin approval
-  | 'approved'      // allowed to call createMarket()
-  | 'rejected'      // application denied
+  | 'loading' // querying Supabase
+  | 'disconnected' // no wallet connected
+  | 'none' // connected but no application on record
+  | 'pending' // application submitted, awaiting admin approval
+  | 'approved' // allowed to call createMarket()
+  | 'rejected' // application denied
 
 export type ApplyInput = { name: string; email: string; reason: string }
 

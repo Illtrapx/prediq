@@ -14,7 +14,6 @@ Request: `POST /api/faucet` with JSON body `{ "address": "0x..." }`.
 Response: `200 { ok: true, txHash }` on success, or `{ error }` with status
 `400` (bad address), `405` (non-POST), or `500` (missing key / tx failure).
 
-
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

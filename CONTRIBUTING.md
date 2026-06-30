@@ -55,13 +55,16 @@ Run `npm run prettier:write` from the root before committing to auto-format ever
 
 ## Adding contract features
 
-- Tests are mandatory. The `@fhevm/hardhat-plugin` mock supports the full FHE API locally — no Sepolia keys or funds needed.
+- Tests are mandatory. The `@fhevm/hardhat-plugin` mock supports the full FHE API locally — no Sepolia keys or funds
+  needed.
 - Keep ACL discipline: every persisted ciphertext gets `FHE.allowThis`; cross-contract handles use `FHE.allowTransient`.
-- Any ABI change needs a corresponding TypeChain regeneration (`npm run compile`) and a frontend update in `src/lib/contract.ts`.
+- Any ABI change needs a corresponding TypeChain regeneration (`npm run compile`) and a frontend update in
+  `src/lib/contract.ts`.
 
 ## Adding frontend features
 
-- New dependencies need justification — bundle size matters. Check if an existing dep already covers the use case (`viem`, `wagmi`, `framer-motion`, `ethers` are all available).
+- New dependencies need justification — bundle size matters. Check if an existing dep already covers the use case
+  (`viem`, `wagmi`, `framer-motion`, `ethers` are all available).
 - New env vars must be documented in the README's **Environment variables** table.
 - UI changes should include screenshots or a screen recording in the PR.
 
@@ -76,18 +79,22 @@ chore: bump hardhat to 2.29
 docs: add dispute flow to README
 ```
 
-Subject ≤ 72 chars. Body explains *why*, not *what* (the diff already says what).
+Subject ≤ 72 chars. Body explains _why_, not _what_ (the diff already says what).
 
 ## Code style
 
-Prettier + ESLint enforce everything automatically. One rule that isn't auto-enforced: **no comments that explain what the code does** — rename the symbol instead. Comments should only explain *why* (hidden constraint, subtle invariant, workaround for a specific bug).
+Prettier + ESLint enforce everything automatically. One rule that isn't auto-enforced: **no comments that explain what
+the code does** — rename the symbol instead. Comments should only explain _why_ (hidden constraint, subtle invariant,
+workaround for a specific bug).
 
 ## Sensitive information
 
-- **Never commit private keys, mnemonics, or `.env` files.** Hardhat vars (`npx hardhat vars set`) keep secrets out of the repo.
+- **Never commit private keys, mnemonics, or `.env` files.** Hardhat vars (`npx hardhat vars set`) keep secrets out of
+  the repo.
 - Vercel secrets stay in the Vercel dashboard.
 - If you accidentally commit a secret, rotate it immediately and open an issue.
 
 ## License
 
-By contributing, you agree your contributions are licensed under the same [BSD-3-Clause-Clear](./LICENSE) terms as the project.
+By contributing, you agree your contributions are licensed under the same [BSD-3-Clause-Clear](./LICENSE) terms as the
+project.

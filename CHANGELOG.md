@@ -9,6 +9,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — `Added`, `C
 ## [Unreleased]
 
 ### Added
+
 - GitHub issue templates (bug report, feature request)
 - PR template with contract-change and frontend-change checklists
 - `CONTRIBUTING.md` with full contributor workflow
@@ -16,10 +17,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — `Added`, `C
 - `CODEOWNERS` for automatic PR review assignment
 
 ### Changed
+
 - CI workflow now runs on pull requests in addition to pushes to `main`
 - CI includes frontend lint + build step
 
 ### Removed
+
 - `ts-generator` from root `devDependencies` (transitive dep of `typechain`, not needed directly)
 
 ---
@@ -29,6 +32,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — `Added`, `C
 Initial submission for the **Zama Developer Program — Mainnet Season 3, Builder Track**.
 
 ### Added
+
 - `PredictionMarket.sol` — core FHE prediction market: `createMarket`, `bet`, `resolve`, `finalizePools`, `claim`
 - `ConfidentialStakeToken.sol` — ERC-7984 encrypted token (CST) with `euint64` balances
 - Full Hardhat test suite on mock FHEVM (`test/PredictionMarket.ts`)

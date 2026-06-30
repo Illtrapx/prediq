@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 
 export type Countdown = {
   remaining: number // seconds remaining; 0 when past deadline
-  active: boolean   // true while remaining > 0
-  label: string     // "2d 4h 3m" | "1h 5m 30s" | "45s"
+  active: boolean // true while remaining > 0
+  label: string // "2d 4h 3m" | "1h 5m 30s" | "45s"
 }
 
 function format(remaining: number): string {

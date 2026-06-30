@@ -136,7 +136,11 @@ async function render(req: Request) {
           color: '#7d8187',
         },
       },
-      h('div', null, (process.env.APP_ORIGIN ?? 'https://prediq-umber.vercel.app').replace(/^https?:\/\//, '')),
+      h(
+        'div',
+        null,
+        (process.env.APP_ORIGIN ?? 'https://prediq-umber.vercel.app').replace(/^https?:\/\//, ''),
+      ),
       h('div', { style: { color: '#ffd208' } }, 'Powered by Zama FHE'),
     ),
   )

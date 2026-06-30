@@ -22,7 +22,7 @@ const LIVE_NETWORKS = new Set(["sepolia", "mainnet", "polygon"]);
 if (LIVE_NETWORKS.has(process.env.HARDHAT_NETWORK ?? "") && !vars.has("MNEMONIC")) {
   throw new Error(
     "MNEMONIC is not set in Hardhat vars — aborting to prevent deployment with the public test mnemonic.\n" +
-    "Write to AppData/Roaming/hardhat-nodejs/Config/vars.json on Windows, or set HARDHAT_VAR_MNEMONIC=... at command time.",
+      "Write to AppData/Roaming/hardhat-nodejs/Config/vars.json on Windows, or set HARDHAT_VAR_MNEMONIC=... at command time.",
   );
 }
 

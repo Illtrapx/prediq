@@ -32,10 +32,7 @@ async function deployFixture(signers: Signers) {
 
   // Fund alice & bob with CST from the deployer, then have each approve the market as operator.
   for (const bettor of [signers.alice, signers.bob]) {
-    const enc = await fhevm
-      .createEncryptedInput(tokenAddress, signers.deployer.address)
-      .add64(STARTING_CST)
-      .encrypt();
+    const enc = await fhevm.createEncryptedInput(tokenAddress, signers.deployer.address).add64(STARTING_CST).encrypt();
     await (
       await token
         .connect(signers.deployer)
@@ -138,8 +135,8 @@ describe("PredictionMarket", function () {
     // Off-chain public decryption of the now-revealable pools.
     const [yesPool, noPool] = await contract.getPools(id);
     const dec = await fhevm.publicDecrypt([yesPool, noPool]);
-    expect(dec.clearValues[yesPool]).to.eq(100n);
-    expect(dec.clearValues[noPool]).to.eq(300n);
+    expect(dec.clearValues[yesPool as `0x${string}`]).to.eq(100n);
+    expect(dec.clearValues[noPool as `0x${string}`]).to.eq(300n);
 
     // Submit cleartexts + proof back on-chain.
     await (
@@ -186,9 +183,10 @@ describe("PredictionMarket", function () {
   });
 
   it("reverts createMarket with a past or zero deadline", async function () {
-    await expect(
-      contract.connect(signers.deployer).createMarket("Bad market", 0),
-    ).to.be.revertedWithCustomError(contract, "DeadlineTooEarly");
+    await expect(contract.connect(signers.deployer).createMarket("Bad market", 0)).to.be.revertedWithCustomError(
+      contract,
+      "DeadlineTooEarly",
+    );
   });
 
   it("reverts resolve on a market with no bets", async function () {
@@ -243,7 +241,7 @@ describe("PredictionMarket", function () {
     await (await contract.connect(signers.deployer).resolve(id, true)).wait();
     const [yesPool] = await contract.getPools(id);
     const poolDec = await fhevm.publicDecrypt([yesPool]);
-    expect(poolDec.clearValues[yesPool]).to.eq(100n);
+    expect(poolDec.clearValues[yesPool as `0x${string}`]).to.eq(100n);
   });
 
   it("claim pays out CST to the winner via encrypted transfer", async function () {
