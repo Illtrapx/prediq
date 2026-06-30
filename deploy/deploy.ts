@@ -11,7 +11,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     log: true,
   });
 
-  const deployedPredictionMarket = await deploy("PredictionMarket", {
+  const _deployedPredictionMarket = await deploy("PredictionMarket", {
     from: deployer,
     args: [deployedStakeToken.address],
     log: true,
