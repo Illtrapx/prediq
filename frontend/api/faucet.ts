@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { ethers } from 'ethers'
 import { createInstance, SepoliaConfig } from '@zama-fhe/relayer-sdk/node'
-import { CST_ADDRESS, RPC_URL, supabase, userFacingError } from './_lib/config'
+import { CST_ADDRESS, RPC_URL, supabase, userFacingError } from './_lib/config.js'
 
 const ABI = [
   'function confidentialTransfer(address to, bytes32 encryptedAmount, bytes inputProof) returns (bytes32)',

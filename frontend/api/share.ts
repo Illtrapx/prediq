@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { ethers } from 'ethers'
-import { PM_ADDRESS, RPC_URL } from './_lib/config'
+import { PM_ADDRESS, RPC_URL } from './_lib/config.js'
 
 const ABI = [
   'function getMarket(uint256 id) view returns (tuple(string question, uint64 resolveDeadline, address resolver, bool resolved, bool winningSide, bool finalized, bool hasBets, uint64 totalPool, uint64 winningPool) market)',
