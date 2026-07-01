@@ -7,6 +7,7 @@ import { PageMotion } from '../components/PageMotion'
 import { getMyBets } from '../lib/mybets'
 import type { MyBet } from '../lib/mybets'
 import { ShareCard } from '../components/ShareCard'
+import { CipherChip } from '../components/CipherChip'
 import { useShareCard } from '../hooks/useShareCard'
 
 type Props = { address: string | null }
@@ -166,6 +167,9 @@ export function MyBetsPage({ address }: Props) {
                       <span className="w-1.5 h-1.5 rounded-full" style={{ background: st.dot }} />
                       {st.label}
                       <span className="text-mute">· {new Date(r.ts).toLocaleDateString()}</span>
+                    </div>
+                    <div className="mt-1.5">
+                      <CipherChip seed={r.txHash ?? `${r.marketId}-${r.ts}`} />
                     </div>
                   </div>
                   <div className="text-right shrink-0 flex items-center gap-3">

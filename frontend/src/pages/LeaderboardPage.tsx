@@ -6,6 +6,8 @@ import { getPMReadContract } from '../lib/contract'
 import { PageMotion } from '../components/PageMotion'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { staggerContainer, fadeUp } from '../lib/animations'
+import { DEMO_TRADES, demoLeaderboardRows } from '../lib/demo'
+import { CipherChip } from '../components/CipherChip'
 
 type Row = { wallet: string; bets: number; correct: number; winRate: number }
 
@@ -18,6 +20,11 @@ export function LeaderboardPage({ address }: { address: string | null }) {
 
   useEffect(() => {
     let alive = true
+    // Showcase seeding: synthetic personas fill out the board for the demo, and
+    // stand in when the on-chain query fails (RPC hiccup, rate limit, local dev).
+    const demo: Row[] = DEMO_TRADES ? demoLeaderboardRows() : []
+    const rank = (list: Row[]) =>
+      list.filter(r => r.bets >= 1).sort((a, b) => b.winRate - a.winRate || b.correct - a.correct)
     ;(async () => {
       try {
         const c = getPMReadContract()
@@ -39,17 +46,14 @@ export function LeaderboardPage({ address }: { address: string | null }) {
           if (w) correct.set(w, (correct.get(w) ?? 0) + 1)
         }
 
-        const out: Row[] = [...bets.entries()]
-          .map(([wallet, b]) => {
-            const cor = correct.get(wallet) ?? 0
-            return { wallet, bets: b, correct: cor, winRate: b > 0 ? (cor / b) * 100 : 0 }
-          })
-          .filter(r => r.bets >= 1)
-          .sort((a, b) => b.winRate - a.winRate || b.correct - a.correct)
+        const real: Row[] = [...bets.entries()].map(([wallet, b]) => {
+          const cor = correct.get(wallet) ?? 0
+          return { wallet, bets: b, correct: cor, winRate: b > 0 ? (cor / b) * 100 : 0 }
+        })
 
-        if (alive) setRows(out)
+        if (alive) setRows(rank([...real, ...demo]))
       } catch {
-        if (alive) setRows([])
+        if (alive) setRows(rank(demo))
       }
     })()
     return () => {
@@ -103,17 +107,20 @@ export function LeaderboardPage({ address }: { address: string | null }) {
                   className={`grid grid-cols-[40px_1fr_72px_72px_88px] gap-2 px-5 py-3 border-b border-hairline last:border-0 text-sm ${mine ? 'bg-white/[0.04]' : ''}`}
                 >
                   <span className="text-mute font-mono">{i + 1}</span>
-                  <span className="font-mono text-body flex items-center gap-2 min-w-0">
-                    <span className="truncate">{truncate(r.wallet)}</span>
-                    {mine && (
-                      <motion.span
-                        className="eyebrow text-[10px] text-[#ff7a17] shrink-0"
-                        animate={{ scale: [1, 1.05, 1] }}
-                        transition={{ duration: 2, ease: 'easeInOut', repeat: Infinity }}
-                      >
-                        You
-                      </motion.span>
-                    )}
+                  <span className="font-mono text-body flex flex-col gap-0.5 min-w-0">
+                    <span className="flex items-center gap-2 min-w-0">
+                      <span className="truncate">{truncate(r.wallet)}</span>
+                      {mine && (
+                        <motion.span
+                          className="eyebrow text-[10px] text-[#ff7a17] shrink-0"
+                          animate={{ scale: [1, 1.05, 1] }}
+                          transition={{ duration: 2, ease: 'easeInOut', repeat: Infinity }}
+                        >
+                          You
+                        </motion.span>
+                      )}
+                    </span>
+                    <CipherChip seed={r.wallet} />
                   </span>
                   <span className="text-right text-ink font-mono">{r.correct}</span>
                   <span className="text-right text-mute font-mono">{r.bets}</span>

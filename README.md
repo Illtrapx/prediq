@@ -281,10 +281,11 @@ cd frontend && npm install
 
 ### Frontend — `frontend/.env.local`
 
-| Variable                 | Required | Description                                               |
-| ------------------------ | -------- | --------------------------------------------------------- |
-| `VITE_SUPABASE_URL`      | yes      | Supabase project URL                                      |
-| `VITE_SUPABASE_ANON_KEY` | yes      | Supabase publishable anon key (safe to expose to browser) |
+| Variable                 | Required | Description                                                                             |
+| ------------------------ | -------- | -------------------------------------------------------------------------------------- |
+| `VITE_SUPABASE_URL`      | yes      | Supabase project URL                                                                   |
+| `VITE_SUPABASE_ANON_KEY` | yes      | Supabase publishable anon key (safe to expose to browser)                              |
+| `VITE_DEMO_TRADES`       | no       | Showcase-only synthetic activity. Defaults `on`; set `off` to show real on-chain data only. Purely client-side display — no chain writes or persistence. Seeds fake bets into the activity feed of **live** markets and fake wallets into the leaderboard. |
 
 ### Vercel serverless API — Vercel project settings (or `frontend/.env.local` for local dev)
 

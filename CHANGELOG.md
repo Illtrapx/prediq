@@ -10,6 +10,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — `Added`, `C
 
 ### Added
 
+- Showcase demo seeding (`VITE_DEMO_TRADES`, default `on`) — synthetic recent bets in the activity feed of live markets and synthetic wallets in the leaderboard. Purely client-side display; no chain writes or persistence. Set `VITE_DEMO_TRADES=off` to show real on-chain data only.
 - GitHub issue templates (bug report, feature request)
 - PR template with contract-change and frontend-change checklists
 - `CONTRIBUTING.md` with full contributor workflow

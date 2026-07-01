@@ -985,7 +985,7 @@ export function MarketDetailPage({ signer, address }: Props) {
             })()}
 
           {/* Anonymous activity feed — encrypted bets, no amounts/sides */}
-          <ActivityFeed marketId={marketId} />
+          <ActivityFeed marketId={marketId} live={marketStatus.label === 'OPEN'} />
 
           {/* Privacy proof — how FHE protects this market */}
           <PrivacyProofPanel />

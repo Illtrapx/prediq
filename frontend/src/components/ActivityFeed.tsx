@@ -4,11 +4,19 @@ import type { EventLog } from 'ethers'
 import { getPMReadContract, readProvider } from '../lib/contract'
 import { slideInRight, staggerContainer } from '../lib/animations'
 import { useVisibilityPolling } from '../hooks/useVisibilityPolling'
+import { DEMO_TRADES, demoActivity } from '../lib/demo'
 
-type Entry = { bettor: string; ts: number; txHash: string }
+type Entry = { bettor: string; ts: number; txHash?: string; fake?: boolean }
 
 function truncate(addr: string): string {
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`
+}
+
+// Showcase seeding: blend synthetic recent bets into live markets only,
+// newest-first, capped at 20 like the real feed.
+function mergeDemo(real: Entry[], marketId: number, live: boolean): Entry[] {
+  if (!DEMO_TRADES || !live) return real
+  return [...real, ...demoActivity(marketId)].sort((a, b) => b.ts - a.ts).slice(0, 20)
 }
 
 function ago(ts: number): string {
@@ -22,7 +30,7 @@ function ago(ts: number): string {
   return `${d}d ago`
 }
 
-export function ActivityFeed({ marketId }: { marketId: number }) {
+export function ActivityFeed({ marketId, live = false }: { marketId: number; live?: boolean }) {
   const [entries, setEntries] = useState<Entry[] | null>(null)
   // Bumps every 15s so relative timestamps ("just now" → "1 min ago") tick
   // live without remounting the rows (keeps slide-in animations intact).
@@ -46,17 +54,16 @@ export function ActivityFeed({ marketId }: { marketId: number }) {
           if (b) tsByBlock.set(bn, b.timestamp)
         }),
       )
-      setEntries(
-        last.map(l => ({
-          bettor: (l.args?.bettor as string) ?? '0x',
-          ts: tsByBlock.get(l.blockNumber) ?? Math.floor(Date.now() / 1000),
-          txHash: l.transactionHash,
-        })),
-      )
+      const real: Entry[] = last.map(l => ({
+        bettor: (l.args?.bettor as string) ?? '0x',
+        ts: tsByBlock.get(l.blockNumber) ?? Math.floor(Date.now() / 1000),
+        txHash: l.transactionHash,
+      }))
+      setEntries(mergeDemo(real, marketId, live))
     } catch {
-      setEntries([])
+      setEntries(mergeDemo([], marketId, live))
     }
-  }, [marketId])
+  }, [marketId, live])
 
   useVisibilityPolling(load, 30000)
 
@@ -101,7 +108,7 @@ export function ActivityFeed({ marketId }: { marketId: number }) {
           <AnimatePresence initial={false}>
             {entries.map((e, i) => (
               <motion.div
-                key={`${e.txHash}-${i}`}
+                key={`${e.txHash ?? e.bettor}-${i}`}
                 layout
                 variants={slideInRight}
                 exit={{ opacity: 0, x: 30 }}
@@ -109,7 +116,11 @@ export function ActivityFeed({ marketId }: { marketId: number }) {
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-[#ff7a17] shrink-0" />
                 <a
-                  href={`https://sepolia.etherscan.io/tx/${e.txHash}`}
+                  href={
+                    e.txHash
+                      ? `https://sepolia.etherscan.io/tx/${e.txHash}`
+                      : `https://sepolia.etherscan.io/address/${e.bettor}`
+                  }
                   target="_blank"
                   rel="noreferrer"
                   aria-label={`Encrypted bet from ${truncate(e.bettor)} — view on Etherscan`}
